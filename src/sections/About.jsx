@@ -6,7 +6,7 @@ import { Clock, Award, Users } from 'lucide-react';
 const About = () => {
   return (
     <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-6 md:px-12">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           
           {/* Image Grid */}
@@ -65,8 +65,6 @@ const About = () => {
                   <span className="text-sm font-semibold text-gray-700">Family Place</span>
                </div>
             </div>
-
-            <Button variant="primary">Explore More</Button>
           </div>
         </div>
       </div>

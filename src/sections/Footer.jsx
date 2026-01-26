@@ -4,18 +4,13 @@ import { Facebook, Instagram, Twitter } from 'lucide-react';
 const Footer = () => {
     return (
         <footer className="bg-gray-900 text-white pt-16 pb-8">
-            <div className="container mx-auto px-4">
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 border-b border-gray-800 pb-12">
+            <div className="container mx-auto px-6 md:px-12">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 border-b border-gray-800 pb-12">
                     <div>
                         <h3 className="text-2xl font-bold mb-4 text-primary">New Nellai Punjabi</h3>
                         <p className="text-gray-400 text-sm leading-relaxed mb-6">
                             Authentic South Indian & Punjabi cuisine. A family tradition of serving quality food for over 25 years.
                         </p>
-                        <div className="flex gap-4">
-                            <a href="#" className="hover:text-primary transition-colors"><Facebook size={20} /></a>
-                            <a href="#" className="hover:text-primary transition-colors"><Instagram size={20} /></a>
-                            <a href="#" className="hover:text-primary transition-colors"><Twitter size={20} /></a>
-                        </div>
                     </div>
                     
                     <div>
@@ -39,20 +34,7 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    <div>
-                        <h4 className="font-bold mb-4">Newsletter</h4>
-                        <p className="text-gray-400 text-sm mb-4">Subscribe for offers and updates.</p>
-                        <div className="flex">
-                            <input 
-                                type="email" 
-                                placeholder="Email Address" 
-                                className="bg-gray-800 text-white px-4 py-2 rounded-l-lg focus:outline-none w-full text-sm"
-                            />
-                            <button className="bg-primary px-4 py-2 rounded-r-lg hover:bg-green-800 transition-colors">
-                                Go
-                            </button>
-                        </div>
-                    </div>
+
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">

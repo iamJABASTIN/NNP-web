@@ -17,13 +17,7 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center text-white">
-        <div className="animate-fade-in-up">
-          <div className="flex justify-center mb-4">
-            <div className="bg-primary/20 p-4 rounded-full backdrop-blur-sm border border-primary/30">
-               <ChefHat size={48} className="text-secondary" />
-            </div>
-          </div>
-          
+        <div className="animate-fade-in-up">          
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 tracking-tight">
             New Nellai Punjabi
           </h1>
@@ -35,23 +29,9 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button variant="primary" className="min-w-[180px] justify-center text-lg">
               <ChefHat size={20} />
-              Dine-In Menu
+                Order Now
             </Button>
-            
-            <div className="flex gap-4">
-               <Button variant="outline" className="min-w-[140px] justify-center">
-                <MapPin size={20} />
-                Locate Us
-              </Button>
-            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-white/50">
-        <div className="w-1 h-12 rounded-full border-2 border-white/30 flex justify-center p-1">
-          <div className="w-1 h-3 bg-white/50 rounded-full"></div>
         </div>
       </div>
     </section>

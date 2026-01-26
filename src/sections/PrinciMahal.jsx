@@ -18,7 +18,7 @@ const PrinciMahal = () => {
 
   return (
     <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-6 md:px-12">
         <Title subTitle="Event Space" title="Princi Mahal" />
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -51,9 +51,9 @@ const PrinciMahal = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="primary">
+              <Button variant="primary" onClick={() => window.location.href = 'tel:+918220139158'}>
                 <Phone size={18} />
-                Call for Booking
+                +91 82201 39158
               </Button>
               <Button variant="secondary">
                 WhatsApp Enquiry

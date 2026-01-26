@@ -43,7 +43,7 @@ const RestaurantHighlight = () => {
 
   return (
     <section className="py-20 bg-secondary/30">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-6 md:px-12">
         <Title subTitle="Our Specialties" title="New Nellai Punjabi" />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">

@@ -3,7 +3,6 @@ import About from './sections/About';
 import RestaurantHighlight from './sections/RestaurantHighlight';
 import PrinciMahal from './sections/PrinciMahal';
 import AshaFoods from './sections/AshaFoods';
-import Gallery from './sections/Gallery';
 import Location from './sections/Location';
 import Footer from './sections/Footer';
 
@@ -15,7 +14,6 @@ function App() {
       <RestaurantHighlight />
       <PrinciMahal />
       <AshaFoods />
-      <Gallery />
       <Location />
       <Footer />
     </div>

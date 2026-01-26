@@ -54,7 +54,7 @@ const AshaFoods = () => {
 
   return (
     <section className="py-20 bg-secondary/20">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-6 md:px-12">
         <Title subTitle="Wholesale & Retail" title="Asha Foods" />
 
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -97,8 +97,8 @@ const AshaFoods = () => {
             </div>
             
             <div className="flex justify-center md:justify-end">
-              <Button variant="secondary" className="text-lg px-8 py-4">
-                Contact for Bulk Orders
+              <Button variant="secondary" className="text-lg px-8 py-4" onClick={() => window.location.href = 'tel:+918220139158'}>
+                Contact: +91 82201 39158
               </Button>
             </div>
           </div>
