@@ -1,7 +1,25 @@
-export default function App() {
+import Hero from './sections/Hero';
+import About from './sections/About';
+import RestaurantHighlight from './sections/RestaurantHighlight';
+import PrinciMahal from './sections/PrinciMahal';
+import AshaFoods from './sections/AshaFoods';
+import Gallery from './sections/Gallery';
+import Location from './sections/Location';
+import Footer from './sections/Footer';
+
+function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+    <div className="min-h-screen bg-gray-50 text-gray-800">
+      <Hero />
+      <About />
+      <RestaurantHighlight />
+      <PrinciMahal />
+      <AshaFoods />
+      <Gallery />
+      <Location />
+      <Footer />
+    </div>
+  );
 }
+
+export default App;
