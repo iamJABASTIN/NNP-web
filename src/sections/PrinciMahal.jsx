@@ -1,96 +1,49 @@
 import React from 'react';
-import Title from '../components/Title';
-import Button from '../components/Button';
-import { Users, Calendar, Music, Phone } from 'lucide-react';
+import { motion } from "motion/react";
 
-const PrinciMahal = () => {
-  const features = [
-    { icon: Users, text: "80-150 Pax Capacity" },
-    { icon: Calendar, text: "All Event Types" },
-    { icon: Music, text: "Audio System Available" },
-  ];
-
-  const images = [
-    "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=2098&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=1979&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1505236858274-0959ac156d0f?q=80&w=1948&auto=format&fit=crop"
-  ];
-
-  return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-6 md:px-12">
-        <Title subTitle="Event Space" title="Princi Mahal" />
-
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <div className="order-2 lg:order-1">
-            <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4">
-              Mini Mahal for Memorable Functions
-            </h3>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Looking for an intimate space to celebrate your special moments? Princi Mahal offers the perfect setting for small functions, birthdays, engagements, and corporate meetings.
-            </p>
-
-            <div className="flex flex-wrap gap-4 mb-8">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 bg-secondary px-4 py-2 rounded-full text-primary font-medium">
-                  <feature.icon size={18} />
-                  <span>{feature.text}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-gray-50 border border-gray-100 p-6 rounded-xl mb-8">
-              <h4 className="font-bold text-gray-800 mb-2">Perfect For:</h4>
-              <ul className="text-gray-600 grid grid-cols-2 gap-2 text-sm">
-                <li className="flex items-center gap-2">✓ Birthday Parties</li>
-                <li className="flex items-center gap-2">✓ Engagement Ceremonies</li>
-                <li className="flex items-center gap-2">✓ Corporate Meetings</li>
-                <li className="flex items-center gap-2">✓ Family Get-togethers</li>
-              </ul>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="primary" onClick={() => window.location.href = 'tel:+918220139158'}>
-                <Phone size={18} />
-                +91 82201 39158
-              </Button>
-              <Button variant="secondary">
-                WhatsApp Enquiry
-              </Button>
-            </div>
+const PrinciMahal = () => (
+  <section id="events" className="py-24 px-8 md:px-24 bg-white overflow-hidden text-black">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-end">
+      <motion.div 
+        initial={{ opacity: 0, x: -100 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        className="lg:col-span-8 relative"
+      >
+        <div className="absolute -bottom-6 -right-6 w-full h-full bg-accent -z-10"></div>
+        <img 
+          alt="Banquet Hall" 
+          className="w-full h-[600px] object-cover border-4 border-black" 
+          src="https://picsum.photos/seed/hall/1200/800"
+          referrerPolicy="no-referrer"
+        />
+        <div className="absolute top-0 left-0 bg-black text-white px-8 py-4 -rotate-90 origin-top-left translate-y-full">
+          <span className="text-xs font-black uppercase tracking-widest">Architectural Grandeur</span>
+        </div>
+      </motion.div>
+      <div className="lg:col-span-4 space-y-8 lg:pb-12">
+        <h2 className="text-6xl font-black uppercase tracking-tighter leading-none">Princi<br />Mahal.</h2>
+        <p className="text-lg leading-snug">A geometric symphony of space and light, engineered for celebrations of up to 500 guests.</p>
+        <div className="space-y-4 border-t-2 border-black pt-8">
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+            <span>Capacity</span>
+            <span className="text-accent">500 Pax</span>
           </div>
-
-          {/* Image Grid */}
-          <div className="order-1 lg:order-2 grid grid-rows-2 gap-4 h-[500px]">
-            <div className="row-span-1 rounded-2xl overflow-hidden shadow-lg">
-               <img 
-                 src={images[0]} 
-                 alt="Princi Mahal Main Hall" 
-                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-               />
-            </div>
-            <div className="grid grid-cols-2 gap-4 row-span-1">
-               <div className="rounded-2xl overflow-hidden shadow-lg">
-                 <img 
-                   src={images[1]} 
-                   alt="Decoration Setup" 
-                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                 />
-               </div>
-               <div className="rounded-2xl overflow-hidden shadow-lg">
-                 <img 
-                   src={images[2]} 
-                   alt="Gathering" 
-                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                 />
-               </div>
-            </div>
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+            <span>Catering</span>
+            <span className="text-accent">Royal Fusion</span>
+          </div>
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+            <span>Service</span>
+            <span className="text-accent">Platinum</span>
           </div>
         </div>
+        <button className="w-full border-4 border-black py-4 text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all">
+          Inquire Blueprint
+        </button>
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
 export default PrinciMahal;

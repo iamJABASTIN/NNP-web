@@ -1,88 +1,60 @@
 import React from 'react';
-import Title from '../components/Title';
-import Button from '../components/Button';
-import { Utensils, Star, Flame, Coffee } from 'lucide-react';
 
-const SpecialtyCard = ({ icon: Icon, title, description }) => (
-  <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow border border-green-50">
-    <div className="bg-secondary w-12 h-12 rounded-full flex items-center justify-center mb-4">
-      <Icon className="text-primary" size={24} />
-    </div>
-    <h3 className="text-xl font-bold mb-2 text-gray-800">{title}</h3>
-    <p className="text-gray-600 text-sm">{description}</p>
-  </div>
-);
-
-const MenuItem = ({ name, price, description, image }) => (
-  <div className="flex gap-4 items-center bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all">
-    <img src={image} alt={name} className="w-20 h-20 rounded-lg object-cover" />
-    <div className="flex-1">
-      <div className="flex justify-between items-center mb-1">
-        <h4 className="font-bold text-gray-800">{name}</h4>
-        <span className="text-primary font-bold">{price}</span>
+const RestaurantHighlight = () => (
+  <section id="menu" className="bg-black text-white">
+    <div className="grid grid-cols-1 md:grid-cols-4 border-t-4 border-black">
+      <div className="md:col-span-2 p-12 md:p-24 flex flex-col justify-end bg-white text-black border-r-4 border-black">
+        <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-8">Menu<br />Lab<span className="text-accent">_</span></h2>
+        <p className="text-lg font-bold">A curated selection of signature compositions.</p>
       </div>
-      <p className="text-xs text-gray-500 line-clamp-2">{description}</p>
-    </div>
-  </div>
-);
-
-const RestaurantHighlight = () => {
-  const specialties = [
-    { icon: Flame, title: "Tandoori Specials", description: "Smoky, succulent clay-oven delicacies tailored to perfection." },
-    { icon: Utensils, title: "Chettinad Spices", description: "Authentic spicy blends from the heart of Tamil Nadu." },
-    { icon: Coffee, title: "South Indian Breakfast", description: "Crispy dosas, fluffy idlis, and aromatic filter coffee." },
-    { icon: Star, title: "Signature Biryanis", description: "Aromatic basmati rice cooked with premium meats and spices." },
-  ];
-
-  const menuPreview = [
-    { name: "Chicken Biryani", price: "₹240", description: "Classic style fragrant rice with tender chicken piece.", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=1950&auto=format&fit=crop" },
-    { name: "Paneer Butter Masala", price: "₹180", description: "Soft cottage cheese in rich tomato gravy.", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?q=80&w=1974&auto=format&fit=crop" },
-    { name: "Mutton Chukka", price: "₹280", description: "Spicy dry roasted mutton with curry leaves.", image: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?q=80&w=2070&auto=format&fit=crop" },
-    { name: "Mixed Grill Platter", price: "₹550", description: "Assortment of kebabs and tikkas.", image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=1935&auto=format&fit=crop" },
-  ];
-
-  return (
-    <section className="py-20 bg-secondary/30">
-      <div className="container mx-auto px-6 md:px-12">
-        <Title subTitle="Our Specialties" title="New Nellai Punjabi" />
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {specialties.map((spec, index) => (
-            <SpecialtyCard key={index} {...spec} />
-          ))}
+      <div className="relative group overflow-hidden h-[400px] md:h-auto border-b-4 md:border-b-0 border-white">
+        <img 
+          alt="Tandoori Saffron" 
+          className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" 
+          src="https://picsum.photos/seed/saffron/600/800"
+          referrerPolicy="no-referrer"
+        />
+        <div className="absolute top-8 left-8">
+          <span className="bg-accent text-black px-3 py-1 text-[10px] font-black uppercase">Alpha</span>
         </div>
-
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h3 className="text-2xl font-bold mb-6 text-accent">Menu Favourites</h3>
-            <div className="grid gap-4">
-              {menuPreview.map((item, index) => (
-                <MenuItem key={index} {...item} />
-              ))}
-            </div>
-            <div className="mt-8">
-              <Button variant="primary" className="w-full md:w-auto justify-center">
-                <Utensils size={18} />
-                Order Now via Dine-In
-              </Button>
-            </div>
-          </div>
-          
-          <div className="relative h-[500px] hidden lg:block rounded-2xl overflow-hidden shadow-2xl">
-            <img 
-               src="https://images.unsplash.com/photo-1550966871-3ed3c47e2ce2?q=80&w=2070&auto=format&fit=crop" 
-               alt="Dining Ambience" 
-               className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
-               <h4 className="text-white text-2xl font-bold mb-2">Experience Luxury</h4>
-               <p className="text-white/80">Dining that delights all your senses.</p>
-            </div>
-          </div>
+        <div className="absolute bottom-8 left-8 right-8">
+          <h3 className="text-2xl font-black uppercase tracking-tight">Tandoori Saffron</h3>
         </div>
       </div>
-    </section>
-  );
-};
+      <div className="relative group overflow-hidden h-[400px] md:h-auto">
+        <img 
+          alt="Artisan Textures" 
+          className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700" 
+          src="https://picsum.photos/seed/bread/600/800"
+          referrerPolicy="no-referrer"
+        />
+        <div className="absolute top-8 left-8">
+          <span className="bg-accent text-black px-3 py-1 text-[10px] font-black uppercase">Beta</span>
+        </div>
+        <div className="absolute bottom-8 left-8 right-8">
+          <h3 className="text-2xl font-black uppercase tracking-tight">Artisan Textures</h3>
+        </div>
+      </div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 border-t-4 border-white">
+      {[
+        { title: "Signature Sweets", desc: "Linear Sugar Compositions", img: "sweet" },
+        { title: "Nellai Filter", desc: "Vertical Pour Extraction", img: "coffee" },
+        { title: "Herbivore Canvas", desc: "Botanical Structuralism", img: "green" }
+      ].map((item, i) => (
+        <div key={i} className="p-12 border-r-0 md:border-r-4 border-white flex flex-col items-center text-center last:border-r-0">
+          <img 
+            alt={item.title} 
+            className="w-32 h-32 rounded-full border-4 border-accent mb-6 grayscale hover:grayscale-0 transition-all" 
+            src={`https://picsum.photos/seed/${item.img}/300/300`}
+            referrerPolicy="no-referrer"
+          />
+          <h4 className="text-xl font-black uppercase mb-2">{item.title}</h4>
+          <p className="text-xs opacity-60">{item.desc}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+);
 
 export default RestaurantHighlight;

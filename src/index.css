@@ -3,10 +3,35 @@
 @tailwind utilities;
 
 @layer base {
+  @keyframes subtle-zoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+  }
+}
+
+@layer base {
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply text-gray-800 antialiased;
+    @apply bg-background text-secondary antialiased font-sans transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .gold-gradient {
+    @apply bg-gradient-to-r from-primary to-primary-container;
+  }
+  
+  .glass-obsidian {
+    @apply bg-background/80 backdrop-blur-xl border border-outline-variant/20 shadow-2xl;
+  }
+
+  .text-gold {
+    @apply text-primary bg-clip-text;
+  }
+
+  .premium-card {
+    @apply bg-surface border border-outline-variant/10 rounded-default overflow-hidden transition-all duration-300 hover:border-primary/30;
   }
 }

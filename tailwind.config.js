@@ -7,12 +7,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#15803d', // green-700
-        secondary: '#f0fdf4', // green-50
-        accent: '#166534', // green-800
+        primary: {
+          DEFAULT: '#f2ca50',
+          container: '#d4af37',
+        },
+        secondary: {
+          DEFAULT: '#bdc7d9',
+          container: '#404a59',
+        },
+        background: '#0c1322',
+        surface: {
+          DEFAULT: '#191f2f',
+          lowest: '#070e1d',
+          low: '#141b2b',
+          high: '#232a3a',
+          highest: '#2e3545',
+          bright: '#323949',
+        },
+        outline: {
+          DEFAULT: '#99907c',
+          variant: '#4d4635',
+        },
+        accent: '#f2ca50', // Mapping accent to primary for convenience
+        muted: '#f8f9fa',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Manrope', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Noto Serif', 'serif'],
+        label: ['Inter', 'sans-serif'],
+      },
+      borderRadius: {
+        'default': '0.25rem', // ROUND_FOUR (4px)
       },
       animation: {
         'fade-in-up': 'fadeInUp 1s ease-out forwards',
