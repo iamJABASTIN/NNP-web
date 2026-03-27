@@ -2,8 +2,8 @@ import React from 'react';
 import { ArrowRight } from "lucide-react";
 
 const Footer = () => (
-  <footer className="bg-black text-white py-24 px-8 md:px-24">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
+  <footer className="bg-black text-white py-16 md:py-24 px-6 sm:px-8 md:px-24">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 md:gap-16">
       <div className="md:col-span-2">
         <div className="text-4xl font-black uppercase tracking-tighter mb-8">Nellai<span className="text-accent">.</span>Punjabi</div>
         <p className="text-lg font-light leading-snug max-w-md opacity-60">
@@ -32,7 +32,7 @@ const Footer = () => (
         <p className="text-[9px] mt-4 opacity-40 uppercase tracking-widest">System updates only.</p>
       </div>
     </div>
-    <div className="mt-24 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-[10px] font-black uppercase tracking-[0.5em] opacity-30">
+    <div className="mt-16 md:mt-24 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] opacity-30 text-center">
       <p>© 2024 NELLAI PUNJABI CORE</p>
       <p>REDEFINING TRADITION</p>
     </div>

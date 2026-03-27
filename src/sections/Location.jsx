@@ -2,23 +2,23 @@ import React from 'react';
 import { Facebook, Instagram, Navigation } from "lucide-react";
 
 const Location = () => (
-  <section className="py-24 px-8 md:px-24 text-black">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-start">
-      <div className="space-y-16">
+  <section className="py-16 md:py-24 px-6 sm:px-8 md:px-24 text-black overflow-hidden">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 items-start">
+      <div className="space-y-12 md:space-y-16">
         <div>
-          <h2 className="text-5xl font-black uppercase tracking-tighter mb-8">Coordinates</h2>
-          <div className="space-y-6 text-2xl font-light">
+          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6 md:mb-8">Coordinates</h2>
+          <div className="space-y-6 text-xl md:text-2xl font-light">
             <p className="flex items-start gap-4">
               <span className="text-accent font-black">LOC:</span>
-              42/A, Heritage Boulevard, High Grounds,<br />Tirunelveli, Tamil Nadu 627002
+              <span>42/A, Heritage Boulevard, High Grounds,<br className="hidden sm:block" />Tirunelveli, Tamil Nadu 627002</span>
             </p>
             <p className="flex items-center gap-4">
               <span className="text-accent font-black">TEL:</span>
-              +91 462 257 8890
+              <span className="text-lg md:text-2xl">+91 462 257 8890</span>
             </p>
             <p className="flex items-center gap-4">
               <span className="text-accent font-black">SYS:</span>
-              concierge@newnellaipunjabi.com
+              <span className="text-sm md:text-2xl break-all">concierge@newnellaipunjabi.com</span>
             </p>
           </div>
         </div>
@@ -37,9 +37,9 @@ const Location = () => (
           </div>
         </div>
       </div>
-      <div className="relative group">
+      <div className="relative group w-full">
         <div className="absolute -top-4 -left-4 w-full h-full border-2 border-black -z-10 group-hover:top-0 group-hover:left-0 transition-all"></div>
-        <div className="h-[500px] w-full bg-muted border-4 border-black relative grayscale hover:grayscale-0 transition-all duration-700 overflow-hidden">
+        <div className="h-[350px] sm:h-[450px] md:h-[500px] w-full bg-muted border-4 border-black relative grayscale hover:grayscale-0 transition-all duration-700 overflow-hidden">
           <img 
             alt="Map Grid" 
             className="w-full h-full object-cover opacity-80" 
