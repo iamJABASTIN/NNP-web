@@ -12,10 +12,10 @@ const Navbar = () => {
 
       {/* Desktop Menu */}
       <div className="hidden lg:flex space-x-10 text-[10px] font-bold tracking-[0.3em] uppercase text-black">
+        <a className="hover:text-accent transition-colors" href="#legacy">About</a>
         <a className="hover:text-accent transition-colors" href="#menu">Menu</a>
         <a className="hover:text-accent transition-colors" href="#events">Events</a>
         <a className="hover:text-accent transition-colors" href="#retail">Retail</a>
-        <a className="hover:text-accent transition-colors" href="#legacy">Legacy</a>
       </div>
 
       <div className="flex items-center space-x-4">
