@@ -1,4 +1,5 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './sections/Hero';
 import About from './sections/About';
@@ -7,11 +8,12 @@ import PrinciMahal from './sections/PrinciMahal';
 import AshaFoods from './sections/AshaFoods';
 import Location from './sections/Location';
 import Footer from './sections/Footer';
-import { Utensils, ShoppingBag } from "lucide-react";
+import AuthPage from './pages/AuthPage';
+import { Utensils } from "lucide-react";
 
-function App() {
+function HomePage() {
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-accent/30 selection:text-black">
+    <>
       <Navbar />
       <main>
         <Hero />
@@ -22,7 +24,7 @@ function App() {
         <Location />
       </main>
       <Footer />
-      
+
       {/* Floating Action Buttons */}
       <div className="fixed bottom-4 right-4 md:bottom-12 md:right-12 z-50 flex flex-col items-center gap-3">
         <button 
@@ -33,6 +35,17 @@ function App() {
           <span className="text-[6px] md:text-[8px] font-black uppercase tracking-tighter mt-1 whitespace-nowrap">Dine In</span>
         </button>
       </div>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <div className="min-h-screen bg-white text-black selection:bg-accent/30 selection:text-black">
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/auth" element={<AuthPage />} />
+      </Routes>
     </div>
   );
 }

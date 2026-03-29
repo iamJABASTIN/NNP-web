@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/95 border-b-2 border-black flex justify-between items-center px-4 md:px-12 py-4">
@@ -19,8 +21,11 @@ const Navbar = () => {
       </div>
 
       <div className="flex items-center space-x-4">
-        <button className="hidden sm:block bg-black text-white px-4 md:px-6 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-all whitespace-nowrap">
-          Book Now
+        <button
+          onClick={() => navigate('/auth')}
+          className="hidden sm:block bg-black text-white px-4 md:px-6 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-all whitespace-nowrap"
+        >
+          Log In
         </button>
         
         {/* Mobile Menu Toggle */}
@@ -40,8 +45,11 @@ const Navbar = () => {
             <a className="hover:text-accent transition-colors" href="#events" onClick={() => setIsMenuOpen(false)}>Events</a>
             <a className="hover:text-accent transition-colors" href="#retail" onClick={() => setIsMenuOpen(false)}>Retail</a>
             <a className="hover:text-accent transition-colors" href="#legacy" onClick={() => setIsMenuOpen(false)}>Legacy</a>
-            <button className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-all text-left">
-              Book Now
+            <button
+              onClick={() => { setIsMenuOpen(false); navigate('/auth'); }}
+              className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-accent hover:text-black transition-all text-left"
+            >
+              Log In
             </button>
           </div>
         </div>
