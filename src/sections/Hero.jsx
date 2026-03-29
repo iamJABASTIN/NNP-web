@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from "motion/react";
 import hero from "../assets/hero.webp"
+import { useNavigate } from 'react-router-dom';
 
-const Hero = () => (
+const Hero = () => {
+  const navigate = useNavigate();
+  return (
   <section className="relative min-h-screen flex flex-col lg:grid lg:grid-cols-12 border-b-4 border-black pt-16">
     <div className="lg:col-span-7 p-6 sm:p-8 md:p-16 flex flex-col justify-center bg-white order-2 lg:order-1 relative overflow-hidden text-black">
       <div className="absolute top-0 right-0 w-64 h-64 bg-muted -mr-32 -mt-32 rotate-45 pointer-events-none"></div>
@@ -23,7 +26,10 @@ const Hero = () => (
         <p className="max-w-md text-base sm:text-lg font-medium leading-tight mb-8 sm:mb-12 text-black/80">
           Where precise South Indian flavors meet grand Punjabi classics. A perfect blend for the modern palate.
         </p>
-        <button className="w-full sm:w-auto bg-black text-white px-8 sm:px-10 py-4 sm:py-5 text-xs font-black uppercase tracking-widest hover:translate-x-1 hover:-translate-y-1 transition-transform border-r-4 border-b-4 border-accent">
+        <button 
+          onClick={() => navigate('/menu')}
+          className="w-full sm:w-auto bg-black text-white px-8 sm:px-10 py-4 sm:py-5 text-xs font-black uppercase tracking-widest hover:translate-x-1 hover:-translate-y-1 transition-transform border-r-4 border-b-4 border-accent"
+        >
           Dine in
         </button>
       </motion.div>
@@ -37,6 +43,7 @@ const Hero = () => (
       <div className="absolute inset-0 border-[24px] border-white/10 pointer-events-none"></div>
     </div>
   </section>
-);
+  );
+};
 
 export default Hero;
