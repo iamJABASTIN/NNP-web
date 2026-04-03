@@ -23,7 +23,7 @@ const OrderSuccessModal = ({ show, onClose, orderId, total, onTrack }) => {
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-24 -right-24 w-48 h-48 bg-accent/10 rounded-full blur-3xl -z-0"
+              className="absolute -top-24 -right-24 w-48 h-48 bg-accent/10 rounded-none-none blur-3xl -z-0"
             />
 
             {/* Success Icon Animation */}
@@ -32,7 +32,7 @@ const OrderSuccessModal = ({ show, onClose, orderId, total, onTrack }) => {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="w-24 h-24 bg-black rounded-none flex items-center justify-center shadow-[6px_6px_0px_#f2ca50]"
+                className="w-24 h-24 bg-black rounded-none-none flex items-center justify-center shadow-[6px_6px_0px_#f2ca50]"
               >
                 <motion.div
                   initial={{ pathLength: 0, opacity: 0 }}

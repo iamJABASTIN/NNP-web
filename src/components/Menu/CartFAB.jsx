@@ -20,7 +20,7 @@ const CartFAB = ({ cart, onClick }) => {
             className="w-full bg-accent border-4 border-black p-4 shadow-[8px_8px_0px_#000000] flex items-center justify-between group active:scale-[0.98] transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black rounded-none">
+              <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black rounded-none-none">
                   {totalQuantity}
               </div>
               <div className="text-left">

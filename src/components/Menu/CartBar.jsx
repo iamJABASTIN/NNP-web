@@ -14,7 +14,7 @@ const CartBar = ({ itemsCount, totalAmount, onViewCart }) => {
         className="bg-accent border-4 border-black p-4 flex items-center justify-between shadow-[8px_8px_0px_#000000] gap-4"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-none border-2 border-white rotate-3">
+          <div className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-none-none border-2 border-white rotate-3">
             <ShoppingBag size={20} className="-rotate-3" />
           </div>
           <div className="flex flex-col">

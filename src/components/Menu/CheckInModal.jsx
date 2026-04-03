@@ -94,12 +94,12 @@ const CheckInModal = ({
               {/* Manual Table Selection for Dine-In without QR */}
               {orderType === 'dine_in' && !isTablePreset && (
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Table Number / Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Table Number </label>
                   <div className="relative border-4 border-black focus-within:shadow-[4px_4px_0px_#f2ca50] transition-all">
                     <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
                     <input 
                       type="text" 
-                      placeholder="e.g. Table 1"
+                      placeholder="e.g. 1"
                       value={manualTableName}
                       onChange={(e) => setManualTableName(e.target.value)}
                       className="w-full pl-12 pr-4 py-4 bg-white outline-none font-bold text-sm uppercase"
@@ -108,21 +108,6 @@ const CheckInModal = ({
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Session Code (Optional)</label>
-                <div className="relative border-4 border-black focus-within:shadow-[4px_4px_0px_#f2ca50] transition-all">
-                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
-                  <input 
-                    type="text" 
-                    placeholder="e.g. AB1234"
-                    maxLength={6}
-                    value={sessionCode}
-                    onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                    className="w-full pl-12 pr-4 py-4 bg-white outline-none font-bold text-sm uppercase tracking-[0.4em]"
-                  />
-                </div>
-                <p className="text-[8px] font-bold text-black/40 px-1">Leave empty to start a new group session.</p>
-              </div>
 
               <button 
                 onClick={onConfirm}

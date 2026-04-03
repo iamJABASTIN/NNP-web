@@ -9,7 +9,6 @@ import CartBar from '../components/Menu/CartBar';
 import MenuView from '../sections/Menu/MenuView';
 import OrdersView from '../sections/Menu/OrdersView';
 import CheckInModal from '../components/Menu/CheckInModal';
-import HomeView from '../sections/Menu/HomeView';
 import ProfileView from '../sections/Menu/ProfileView';
 
 const MenuPage = () => {
@@ -37,7 +36,6 @@ const MenuPage = () => {
 
   const renderView = () => {
     switch (activeTab) {
-      case 'home': return <HomeView />;
       case 'orders': return <OrdersView activeOrderId={activeOrderId} status={orderStatus} />;
       case 'profile': return <ProfileView />;
       default: return (
@@ -65,7 +63,7 @@ const MenuPage = () => {
     <div className="min-h-screen bg-[#F8F8F8] text-black">
       <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} hasActiveOrder={!!activeOrderId} />
       
-      <main className="md:ml-[88px] transition-all duration-300 pb-32">
+      <main className="md:ml-[88px] transition-all duration-300 pb-48">
         {renderView()}
       </main>
 

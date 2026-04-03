@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './sections/Hero';
 import About from './sections/About';
@@ -61,6 +61,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 };
 
 function HomePage() {
+  const navigate = useNavigate();
   return (
     <>
       <Navbar />
@@ -77,8 +78,8 @@ function HomePage() {
       {/* Floating Action Buttons */}
       <div className="fixed bottom-4 right-4 md:bottom-12 md:right-12 z-50 flex flex-col items-center gap-3">
         <button 
-          onClick={() => window.location.href = '/menu'}
-          className="bg-accent text-black w-14 h-14 md:w-20 md:h-20 rounded-none border-4 border-black flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[4px_4px_0px_#000000] md:shadow-[8px_8px_0px_#000000]"
+          onClick={() => navigate('/menu')}
+          className="bg-accent text-black w-14 h-14 md:w-20 md:h-20 rounded-none-none border-4 border-black flex flex-col items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[4px_4px_0px_#000000] md:shadow-[8px_8px_0px_#000000]"
         >
           <Utensils className="text-lg md:text-3xl" size={24} />
           <span className="text-[6px] md:text-[8px] font-black uppercase tracking-tighter mt-1 whitespace-nowrap">Dine In</span>

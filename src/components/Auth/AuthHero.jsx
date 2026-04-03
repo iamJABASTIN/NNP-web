@@ -20,7 +20,7 @@ const AuthHero = () => {
         </h1>
         
         <div className="relative group w-fit">
-          <div className="absolute -inset-2 bg-accent opacity-0 transition-opacity rounded-full blur-2xl"></div>
+          <div className="absolute -inset-2 bg-accent opacity-0 transition-opacity rounded-none-none blur-2xl"></div>
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}

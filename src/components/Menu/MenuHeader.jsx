@@ -20,7 +20,7 @@ const MenuHeader = ({ tableId }) => {
       </div>
       
       {tableId && (
-        <div className="px-3 py-1 bg-black text-white text-[10px] font-black uppercase rounded-none border-2 border-black shadow-[2px_2px_0px_#f2ca50]">
+        <div className="px-3 py-1 bg-black text-white text-[10px] font-black uppercase rounded-none-none border-2 border-black shadow-[2px_2px_0px_#f2ca50]">
           Table {tableId}
         </div>
       )}

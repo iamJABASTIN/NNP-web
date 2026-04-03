@@ -21,7 +21,7 @@ const MenuItemCard = ({ item, cart, addToCart, removeFromCart }) => {
          {/* Diet Indicator Badge */}
          <div className="absolute top-2 right-2 z-10">
            <div className={`w-5 h-5 border-2 border-black flex items-center justify-center bg-white shadow-[2px_2px_0px_#000000] ${item.veg_type === 'veg' ? 'bg-green-100' : 'bg-red-100'}`}>
-             <div className={`w-2 h-2 rounded-full ${item.veg_type === 'veg' ? 'bg-green-600' : 'bg-red-600'}`}></div>
+             <div className={`w-2 h-2 rounded-none-none ${item.veg_type === 'veg' ? 'bg-green-600' : 'bg-red-600'}`}></div>
            </div>
          </div>
       </div>

@@ -11,11 +11,11 @@ const BottomNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-12 left-1/2 -translate-x-1/2 z-[50] w-[90%] max-w-[400px]">
+    <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[50] w-[90%] max-w-[400px]">
       <motion.nav 
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="bg-black/90 border-4 border-black backdrop-blur-md px-6 py-4 flex items-center justify-between shadow-[8px_8px_0px_#f2ca50] gap-2 rounded-2xl"
+        className="bg-black/90 border-4 border-black backdrop-blur-md px-6 py-2 flex items-center justify-between shadow-[8px_8px_0px_#f2ca50] gap-2 rounded-none-none"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -24,7 +24,13 @@ const BottomNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
           return (
             <button
               key={tab.id}
-              onClick={() => onTabChange(tab.id)}
+              onClick={() => {
+                if (tab.id === 'home') {
+                  window.location.href = '/';
+                } else {
+                  onTabChange(tab.id)
+                }
+              }}
               className="relative flex flex-col items-center justify-center gap-1 group"
             >
               <div className={`p-2 transition-all duration-300 relative ${
@@ -35,12 +41,12 @@ const BottomNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
                 {isActive && (
                   <motion.div 
                     layoutId="nav-glow"
-                    className="absolute inset-0 bg-accent/20 blur-xl rounded-full -z-10"
+                    className="absolute inset-0 bg-accent/20 blur-xl rounded-none-none -z-10"
                   />
                 )}
                 
                 {tab.badge && (
-                  <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-black rounded-full" />
+                  <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-black rounded-none-none" />
                 )}
               </div>
               

@@ -23,7 +23,7 @@ const AdminHeader = () => {
       <div className="flex items-center gap-10">
         <div className="flex items-center gap-3">
           {[Bell, MessageSquare, Gift, Settings].map((Icon, i) => (
-            <button key={i} className={`w-12 h-12 rounded-none bg-white ${BORDER_BLACK} flex items-center justify-center shadow-[4px_4px_0px_#000000] hover:bg-[${PRIMARY_YELLOW}] transition-colors group relative`}>
+            <button key={i} className={`w-12 h-12 rounded-none-none bg-white ${BORDER_BLACK} flex items-center justify-center shadow-[4px_4px_0px_#000000] hover:bg-[${PRIMARY_YELLOW}] transition-colors group relative`}>
               <Icon size={20} className="text-black group-hover:scale-110 transition-transform" strokeWidth={2.5} />
               {i === 0 && <div className="absolute top-1.5 right-1.5 w-3 h-3 bg-red-600 border-2 border-black"></div>}
             </button>
@@ -34,7 +34,7 @@ const AdminHeader = () => {
           <span className="text-[14px] font-black uppercase tracking-tighter">
             Hello, <span className="text-[${PRIMARY_YELLOW}] italic outline-text" style={{ WebkitTextStroke: '1px black' }}>Shariar</span>
           </span>
-          <img src="https://i.pravatar.cc/150?u=shariar" alt="" className={`w-12 h-12 rounded-none ${BORDER_BLACK} shadow-[4px_4px_0px_#000000]`} />
+          <img src="https://i.pravatar.cc/150?u=shariar" alt="" className={`w-12 h-12 rounded-none-none ${BORDER_BLACK} shadow-[4px_4px_0px_#000000]`} />
         </div>
       </div>
     </header>

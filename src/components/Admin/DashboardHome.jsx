@@ -66,16 +66,16 @@ const DashboardHome = () => {
       {/* Middle Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Pie Chart Card */}
-        <div className={`lg:col-span-5 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-5 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <div className="flex items-center justify-between mb-8">
             <h4 className="text-xl font-black uppercase tracking-tighter">Market Metrics</h4>
             <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-tighter">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-none border-2 border-black"></div>
+                <div className="w-3 h-3 rounded-none-none border-2 border-black"></div>
                 <span>Data</span>
               </div>
               <div className="flex items-center gap-2 text-[#f2ca50]">
-                <div className="w-3 h-3 rounded-none bg-[#f2ca50] border-2 border-black"></div>
+                <div className="w-3 h-3 rounded-none-none bg-[#f2ca50] border-2 border-black"></div>
                 <span>Value</span>
               </div>
             </div>
@@ -88,7 +88,7 @@ const DashboardHome = () => {
         </div>
 
         {/* Activity Chart Card */}
-        <div className={`lg:col-span-7 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-7 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <div className="flex justify-between items-start mb-8">
             <div>
               <p className="text-[12px] font-black text-black/60 uppercase tracking-[0.3em] mb-2">Weekly Activity Index</p>
@@ -117,7 +117,7 @@ const DashboardHome = () => {
                 <Tooltip 
                   content={({ active, payload }) => {
                     if (active && payload?.[0]) return (
-                      <div className={`bg-black text-white p-4 rounded-none font-black text-[12px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
+                      <div className={`bg-black text-white p-4 rounded-none-none font-black text-[12px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
                         <p className="mb-1 uppercase tracking-widest">18 AUG 2022</p>
                         <p className="text-[${PRIMARY_YELLOW}]">REVENUE: $4.2K</p>
                       </div>
@@ -138,7 +138,7 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
         
         {/* Transactions */}
-        <div className={`lg:col-span-8 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-8 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <div className="flex items-center justify-between mb-8">
             <h4 className="text-xl font-black uppercase tracking-tighter underline underline-offset-8 decoration-4 decoration-[${PRIMARY_YELLOW}]">Transactions</h4>
             <button className={`bg-black text-white px-6 py-2 font-black uppercase text-[10px] tracking-[0.2em] border-2 border-black hover:bg-[${PRIMARY_YELLOW}] hover:text-black transition-all`}>
@@ -179,7 +179,7 @@ const DashboardHome = () => {
         </div>
 
         {/* Team */}
-        <div className={`lg:col-span-4 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-4 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <h4 className="text-xl font-black uppercase mb-8 tracking-tighter">Team</h4>
           <div className="space-y-6">
             {employees.map((emp, i) => (

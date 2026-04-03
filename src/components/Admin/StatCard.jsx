@@ -9,7 +9,7 @@ const StatCard = ({ name, value, change, color, chartData, isNegative }) => (
       <p className="text-black font-black uppercase text-[10px] tracking-widest">{name}</p>
       <h3 className="text-[32px] font-black leading-none mb-3 tracking-tighter">{value}</h3>
       <div className="flex items-center gap-2">
-        <div className={`w-5 h-5 rounded-none ${BORDER_BLACK} flex items-center justify-center bg-white shadow-[2px_2px_0px_#000000]`}>
+        <div className={`w-5 h-5 rounded-none-none ${BORDER_BLACK} flex items-center justify-center bg-white shadow-[2px_2px_0px_#000000]`}>
           {isNegative ? <ArrowDown size={12} strokeWidth={4} /> : <ArrowUp size={12} strokeWidth={4} />}
         </div>
         <span className="text-[12px] font-black italic">{change}% (30 Days)</span>

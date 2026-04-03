@@ -48,7 +48,7 @@ const RestaurantHighlight = () => (
         <div key={i} className="p-10 md:p-12 border-b-4 md:border-b-0 border-white border-r-0 md:border-r-4 last:border-b-0 last:border-r-0 flex flex-col items-center text-center">
           <img 
             alt={item.title} 
-            className="w-32 h-32 object-cover rounded-full border-4 border-accent mb-6 hover:grayscale transition-all" 
+            className="w-32 h-32 object-cover rounded-none-none border-4 border-accent mb-6 hover:grayscale transition-all" 
             src={item.img}
           />
           <h4 className="text-xl font-black uppercase mb-2">{item.title}</h4>
