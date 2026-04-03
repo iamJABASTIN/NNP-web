@@ -1,11 +1,15 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Hash, ArrowRight } from 'lucide-react';
+import { User, Hash, ArrowRight, Phone, ShoppingBag, Utensils } from 'lucide-react';
 
 const CheckInModal = ({ 
   show, 
   onClose, 
   nickname, setNickname, 
+  mobile, setMobile, 
+  orderType, setOrderType,
+  manualTableName, setManualTableName,
+  isTablePreset,
   sessionCode, setSessionCode, 
   loading, 
   onConfirm 
@@ -38,6 +42,27 @@ const CheckInModal = ({
             </div>
 
             <div className="space-y-6">
+              {/* Order Type Toggle */}
+              <div className="flex border-4 border-black p-1 bg-muted/20 shadow-[4px_4px_0px_#000000]">
+                <button
+                  onClick={() => setOrderType('dine_in')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    orderType === 'dine_in' ? 'bg-black text-white' : 'hover:bg-black/5'
+                  }`}
+                >
+                  <Utensils size={14} />
+                  <span>Dine In</span>
+                </button>
+                <button
+                  onClick={() => setOrderType('takeout')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    orderType === 'takeout' ? 'bg-black text-white' : 'hover:bg-black/5'
+                  }`}
+                >
+                  <ShoppingBag size={14} />
+                  <span>Takeout</span>
+                </button>
+              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Your Nickname</label>
                 <div className="relative border-4 border-black focus-within:shadow-[4px_4px_0px_#f2ca50] transition-all">
@@ -51,6 +76,37 @@ const CheckInModal = ({
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Your Phone</label>
+                <div className="relative border-4 border-black focus-within:shadow-[4px_4px_0px_#f2ca50] transition-all">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
+                  <input 
+                    type="tel" 
+                    placeholder="e.g. +91 9876543210"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white outline-none font-bold text-sm uppercase"
+                  />
+                </div>
+              </div>
+
+              {/* Manual Table Selection for Dine-In without QR */}
+              {orderType === 'dine_in' && !isTablePreset && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Table Number / Name</label>
+                  <div className="relative border-4 border-black focus-within:shadow-[4px_4px_0px_#f2ca50] transition-all">
+                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Table 1"
+                      value={manualTableName}
+                      onChange={(e) => setManualTableName(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 bg-white outline-none font-bold text-sm uppercase"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Session Code (Optional)</label>

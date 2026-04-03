@@ -24,10 +24,10 @@ export function useSession() {
   }, []);
 
   // Check-in (Anonymous Login)
-  const checkIn = async (nickname) => {
+  const checkIn = async (nickname, mobile = null) => {
     try {
       const { data, error } = await supabase.auth.signInAnonymously({
-        options: { data: { display_name: nickname } }
+        options: { data: { display_name: nickname, mobile_number: mobile } }
       });
       if (error) throw error;
       return data.user;
