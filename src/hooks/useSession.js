@@ -61,14 +61,38 @@ export function useSession() {
 
   // Start Session (Host)
   const startSession = async (tableId, restaurantId) => {
-    const { data, error } = await supabase
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Authentication required to start a session.');
+
+    // 1. Create the session
+    const { data: sessionData, error: sessionErr } = await supabase
       .from('table_sessions')
-      .insert({ table_id: tableId, restaurant_id: restaurantId, host_user_id: (await supabase.auth.getUser()).data.user.id })
+      .insert({ 
+        table_id: tableId, 
+        restaurant_id: restaurantId, 
+        host_user_id: user.id 
+      })
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (sessionErr) throw sessionErr;
+
+    // 2. Automatically add host as the first member
+    const { error: memberErr } = await supabase
+      .from('session_members')
+      .insert({ 
+        session_id: sessionData.id, 
+        user_id: user.id,
+        display_name: user.user_metadata?.display_name || 'Host'
+      });
+
+    if (memberErr) {
+      console.error('Failed to add host to session members:', memberErr);
+      // We don't throw here to avoid blocking the user if membership insertion fails
+      // but the session header succeeded, although RLS will be tight.
+    }
+
+    return sessionData;
   };
 
   return { user, session, loading, checkIn, joinSession, startSession };

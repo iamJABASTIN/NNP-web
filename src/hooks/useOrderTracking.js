@@ -9,23 +9,47 @@ export function useOrderTracking() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!activeOrderId) return;
-
-    const fetchInitialStatus = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select('status')
-        .eq('id', activeOrderId)
-        .single();
-      
-      if (!error && data) {
-        setOrderStatus(data.status);
-      }
+    if (!activeOrderId) {
       setLoading(false);
+      return;
+    }
+
+    const validateOrder = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select(`
+            status,
+            table_sessions!inner(status)
+          `)
+          .eq('id', activeOrderId)
+          .maybeSingle();
+        
+        if (error || !data) {
+          console.log('Order not found or error, clearing tracking');
+          stopTracking();
+          return;
+        }
+
+        const terminalStatuses = ['delivered', 'completed', 'cancelled', 'served'];
+        const isTerminal = terminalStatuses.includes(data.status.toLowerCase());
+        const isSessionClosed = data.table_sessions?.status !== 'active';
+
+        if (isTerminal || isSessionClosed) {
+          console.log('Order terminal or session closed, clearing tracking:', { isTerminal, isSessionClosed });
+          stopTracking();
+        } else {
+          setOrderStatus(data.status);
+        }
+      } catch (err) {
+        console.error('Order validation failed:', err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchInitialStatus();
+    validateOrder();
 
     // Subscribe to realtime updates
     const channel = supabase
@@ -38,12 +62,13 @@ export function useOrderTracking() {
           table: 'orders',
           filter: `id=eq.${activeOrderId}`
         },
-        (payload) => {
+        async (payload) => {
           setOrderStatus(payload.new.status);
-          // Auto-clear if completed or cancelled
-          if (['delivered', 'completed', 'cancelled'].includes(payload.new.status.toLowerCase())) {
-             // We keep it for a while but maybe clear after some time?
-             // For now just update state.
+          
+          // Double check session status on terminal update
+          const terminalStatuses = ['delivered', 'completed', 'cancelled', 'served'];
+          if (terminalStatuses.includes(payload.new.status.toLowerCase())) {
+             stopTracking();
           }
         }
       )

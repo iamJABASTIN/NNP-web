@@ -21,21 +21,37 @@ export function useMenuPage(tableId) {
   const [vegFilter, setVegFilter] = useState('all');
 
   useEffect(() => {
-    if (user && tableId) {
-      const recoverSession = async () => {
-        const { data: memberData } = await supabase
-          .from('session_members')
-          .select('session_id, table_sessions(*)')
-          .eq('user_id', user.id)
-          .eq('table_sessions.table_id', tableId)
-          .eq('table_sessions.status', 'active')
-          .single();
+    if (user) {
+      // Pre-fill nickname and mobile from user metadata if available
+      if (user.user_metadata?.display_name) setNickname(user.user_metadata.display_name);
+      if (user.user_metadata?.mobile_number) setMobile(user.user_metadata.mobile_number);
 
-        if (memberData?.table_sessions) {
-          setActiveSession(memberData.table_sessions);
-        }
-      };
-      recoverSession();
+      if (tableId) {
+        const recoverSession = async () => {
+          try {
+            const { data: memberData, error: recoverErr } = await supabase
+              .from('session_members')
+              .select('session_id, table_sessions(*)')
+              .eq('user_id', user.id)
+              .eq('table_sessions.table_id', tableId)
+              .eq('table_sessions.status', 'active')
+              .maybeSingle();
+
+            if (recoverErr) {
+              console.error('Session recovery error:', recoverErr);
+              return;
+            }
+
+            if (memberData?.table_sessions) {
+              console.log('Recovered active session:', memberData.table_sessions.id);
+              setActiveSession(memberData.table_sessions);
+            }
+          } catch (err) {
+            console.error('Failed to recover session:', err);
+          }
+        };
+        recoverSession();
+      }
     }
   }, [user, tableId]);
 
@@ -65,27 +81,55 @@ export function useMenuPage(tableId) {
     try {
       let resolvedTableId = tableId;
       if (!resolvedTableId) {
+        if (orderType === 'dine_in' && !manualTableName.trim()) {
+          throw new Error('Please enter a table number for Dine In.');
+        }
+
         const searchName = orderType === 'takeout' ? 'Takeout' : manualTableName;
-        const { data: tableData } = await supabase
+        const DEFAULT_RID = '00000000-0000-0000-0000-000000000001';
+        
+        const { data: tableData, error: tableFetchError } = await supabase
           .from('tables')
           .select('id')
-          .ilike('table_number', searchName)
-          .single();
-        resolvedTableId = tableData?.id || null;
+          .eq('restaurant_id', DEFAULT_RID)
+          .eq('table_number', searchName)
+          .maybeSingle();
+
+        if (tableFetchError || !tableData) {
+          if (orderType === 'takeout') {
+            throw new Error('Takeout mode is currently unavailable. Please contact staff.');
+          }
+          throw new Error(`Table "${manualTableName}" not found. Please enter a valid table number.`);
+        }
+        resolvedTableId = tableData.id;
       }
 
-      let currentUser = user || await checkIn(nickname, mobile);
-      let session = activeSession;
+      // 1. Authenticate / Check-in
+      let currentUser = user;
+      if (!currentUser) {
+        console.log('No user session, performing anonymous check-in...');
+        currentUser = await checkIn(nickname, mobile);
+      }
       
+      // 2. Ensure Session
+      let session = activeSession;
       if (!session) {
         if (sessionCode) {
+          console.log('Joining existing session with code:', sessionCode);
           session = await joinSession(resolvedTableId, sessionCode);
         } else {
+          console.log('Starting new session for table:', resolvedTableId);
           const DEFAULT_RID = '00000000-0000-0000-0000-000000000001';
           session = await startSession(resolvedTableId, DEFAULT_RID);
         }
+        setActiveSession(session);
       }
 
+      if (!session || !session.id) {
+        throw new Error('Failed to establish a valid table session.');
+      }
+
+      // 3. Create Order
       const totalAmount = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
       const { data: newOrder, error: orderError } = await supabase
         .from('orders')
@@ -96,10 +140,15 @@ export function useMenuPage(tableId) {
           table_id: resolvedTableId,
           total_amount: totalAmount
         })
-        .select().single();
+        .select()
+        .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw new Error(`Order failed: ${orderError.message}`);
+      }
 
+      // 4. Create Order Items
       const orderItems = cart.map(item => ({
         order_id: newOrder.id,
         menu_item_id: item.id,
@@ -108,11 +157,62 @@ export function useMenuPage(tableId) {
         station: item.station || 'Main Kitchen'
       }));
 
-      await supabase.from('order_items').insert(orderItems);
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+      if (itemsError) {
+        console.error('Order items insertion error:', itemsError);
+        throw new Error(`Failed to add items to order: ${itemsError.message}`);
+      }
       
       setCart([]);
       setShowCheckIn(false);
       return { order: newOrder, total: totalAmount };
+    } catch (err) {
+      console.error('Checkout error:', err);
+      throw err;
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  const addToExistingOrder = async (orderId) => {
+    if (cart.length === 0) throw new Error('Cart is empty');
+
+    setSessionLoading(true);
+    try {
+      // Insert new items into the existing order
+      const orderItems = cart.map(item => ({
+        order_id: orderId,
+        menu_item_id: item.id,
+        quantity: item.quantity,
+        unit_price: item.price,
+        station: item.station || 'Main Kitchen'
+      }));
+
+      const { error: insertErr } = await supabase.from('order_items').insert(orderItems);
+      if (insertErr) throw insertErr;
+
+      // Update the total_amount on the existing order
+      const addedAmount = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+
+      const { data: currentOrder, error: fetchErr } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchErr) throw fetchErr;
+
+      const newTotal = (currentOrder.total_amount || 0) + addedAmount;
+
+      const { error: updateErr } = await supabase
+        .from('orders')
+        .update({ total_amount: newTotal })
+        .eq('id', orderId);
+
+      if (updateErr) throw updateErr;
+
+      setCart([]);
+      return { orderId, addedAmount, newTotal };
     } finally {
       setSessionLoading(false);
     }
@@ -124,6 +224,6 @@ export function useMenuPage(tableId) {
     vegFilter, setVegFilter, showCheckIn, setShowCheckIn,
     nickname, setNickname, mobile, setMobile, orderType, setOrderType,
     manualTableName, setManualTableName, sessionCode, setSessionCode,
-    sessionLoading, handleCheckoutConfirm
+    sessionLoading, handleCheckoutConfirm, addToExistingOrder
   };
 }

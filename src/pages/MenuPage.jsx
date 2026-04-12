@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMenuPage } from '../hooks/useMenuPage';
 import { useOrderTracking } from '../hooks/useOrderTracking';
+import { useTables } from '../hooks/useTables';
 import SidebarNav from '../components/Navigation/SidebarNav';
 import BottomNav from '../components/Navigation/BottomNav';
 import OrderSuccessModal from '../components/Menu/OrderSuccessModal';
@@ -9,6 +10,7 @@ import CartBar from '../components/Menu/CartBar';
 import MenuView from '../sections/Menu/MenuView';
 import OrdersView from '../sections/Menu/OrdersView';
 import CheckInModal from '../components/Menu/CheckInModal';
+import AddItemsModal from '../components/Menu/AddItemsModal';
 import ProfileView from '../sections/Menu/ProfileView';
 
 const MenuPage = () => {
@@ -16,6 +18,9 @@ const MenuPage = () => {
   const [activeTab, setActiveTab] = useState('menu');
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
+  const [showAddConfirm, setShowAddConfirm] = useState(false);
+  const [addingItems, setAddingItems] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
 
   const {
     categories, items, loading, cart, addToCart, removeFromCart,
@@ -23,10 +28,11 @@ const MenuPage = () => {
     vegFilter, setVegFilter, showCheckIn, setShowCheckIn,
     nickname, setNickname, mobile, setMobile, orderType, setOrderType,
     manualTableName, setManualTableName, sessionCode, setSessionCode,
-    sessionLoading, handleCheckoutConfirm
+    sessionLoading, handleCheckoutConfirm, addToExistingOrder
   } = useMenuPage(tableId);
 
-  const { activeOrderId, orderStatus, trackNewOrder } = useOrderTracking();
+  const { activeOrderId, orderStatus, trackNewOrder, loading: orderTrackingLoading } = useOrderTracking();
+  const { tables, loading: tablesLoading } = useTables();
 
   const onOrderSuccess = (order, total) => {
     setLastOrder({ ...order, total });
@@ -36,7 +42,7 @@ const MenuPage = () => {
 
   const renderView = () => {
     switch (activeTab) {
-      case 'orders': return <OrdersView activeOrderId={activeOrderId} status={orderStatus} />;
+      case 'orders': return <OrdersView activeOrderId={activeOrderId} status={orderStatus} onSwitchToMenu={() => setActiveTab('menu')} />;
       case 'profile': return <ProfileView />;
       default: return (
         <MenuView 
@@ -51,11 +57,42 @@ const MenuPage = () => {
   };
 
   const onCheckout = async () => {
+    setCheckoutError(null);
     try {
       const result = await handleCheckoutConfirm();
       if (result) onOrderSuccess(result.order, result.total);
     } catch (err) {
-      alert(err.message || 'Failed to place order.');
+      console.error('Checkout failed:', err);
+      setCheckoutError(err.message || 'Failed to place order.');
+    }
+  };
+
+  // When active order exists, append items instead of creating a new order
+  const handleViewCart = () => {
+    if (cart.length === 0) return;
+    
+    // If we're still validating the order ID, wait.
+    if (orderTrackingLoading) return;
+
+    if (activeOrderId) {
+      console.log('Active order found, showing AddItemsModal');
+      setShowAddConfirm(true);
+    } else {
+      console.log('No active order, showing CheckInModal');
+      setShowCheckIn(true);
+    }
+  };
+
+  const handleAddToExisting = async () => {
+    setAddingItems(true);
+    try {
+      await addToExistingOrder(activeOrderId);
+      setShowAddConfirm(false);
+      setActiveTab('orders');
+    } catch (err) {
+      alert(err.message || 'Failed to add items.');
+    } finally {
+      setAddingItems(false);
     }
   };
 
@@ -70,7 +107,7 @@ const MenuPage = () => {
       <CartBar 
         itemsCount={cart.reduce((acc, i) => acc + i.quantity, 0)} 
         totalAmount={cart.reduce((acc, i) => acc + (i.price * i.quantity), 0)}
-        onViewCart={() => setShowCheckIn(true)}
+        onViewCart={handleViewCart}
       />
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} hasActiveOrder={!!activeOrderId} />
@@ -90,8 +127,18 @@ const MenuPage = () => {
         manualTableName={manualTableName} setManualTableName={setManualTableName}
         isTablePreset={!!tableId}
         sessionCode={sessionCode} setSessionCode={setSessionCode}
-        loading={sessionLoading}
+        loading={sessionLoading || tablesLoading}
+        error={checkoutError}
+        tables={tables}
         onConfirm={onCheckout}
+      />
+
+      <AddItemsModal
+        show={showAddConfirm}
+        onClose={() => setShowAddConfirm(false)}
+        cart={cart}
+        loading={addingItems}
+        onConfirm={handleAddToExisting}
       />
     </div>
   );

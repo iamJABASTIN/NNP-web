@@ -14,7 +14,7 @@ const MenuControls = ({
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" size={18} />
           <input 
             type="text"
-            placeholder="Search favorites..."
+            placeholder="Search menu items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 outline-none font-bold uppercase text-xs"

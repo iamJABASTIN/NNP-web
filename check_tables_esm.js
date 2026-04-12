@@ -13,7 +13,7 @@ async function checkTables() {
   if (error) {
     console.error('Error fetching tables:', error);
   } else {
-    console.log('Tables in DB:', data);
+    console.log('Tables in DB:', JSON.stringify(data, null, 2));
   }
 }
 
