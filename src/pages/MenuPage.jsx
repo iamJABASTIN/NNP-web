@@ -126,6 +126,7 @@ const MenuPage = () => {
         orderType={orderType} setOrderType={setOrderType}
         manualTableName={manualTableName} setManualTableName={setManualTableName}
         isTablePreset={!!tableId}
+        tableId={tableId}
         sessionCode={sessionCode} setSessionCode={setSessionCode}
         loading={sessionLoading || tablesLoading}
         error={checkoutError}

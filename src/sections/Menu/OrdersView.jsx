@@ -4,7 +4,7 @@ import { ClipboardList, Plus, Receipt, ChefHat, CircleCheck } from 'lucide-react
 import { useOrderDetails } from '../../hooks/useOrderDetails';
 
 const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
-  const { items, totalAmount, loading } = useOrderDetails(activeOrderId);
+  const { items, totalAmount, tableNumber, loading } = useOrderDetails(activeOrderId);
 
   if (!activeOrderId) {
     return <EmptyState />;
@@ -16,7 +16,7 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
 
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom duration-500">
-      <OrderHeader status={status} />
+      <OrderHeader status={status} tableNumber={tableNumber} />
       <ReceiptCard items={items} totalAmount={totalAmount} />
       <ActionButtons onSwitchToMenu={onSwitchToMenu} />
     </div>
@@ -43,7 +43,7 @@ const LoadingState = () => (
   </div>
 );
 
-const OrderHeader = ({ status }) => {
+const OrderHeader = ({ status, tableNumber }) => {
   const currentStatus = (status || 'pending').toLowerCase();
   const statusConfig = {
     pending:   { label: 'Order Received', color: 'bg-blue-100 text-blue-800' },
@@ -59,7 +59,15 @@ const OrderHeader = ({ status }) => {
         <div className="w-10 h-10 bg-black flex items-center justify-center shadow-[4px_4px_0px_#f2ca50]">
           <Receipt size={20} className="text-accent" />
         </div>
-        <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">My Order</h2>
+        <div>
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">My Order</h2>
+          {tableNumber && (
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-accent">Table #</span>
+              <span className="text-xs font-black italic">{tableNumber}</span>
+            </div>
+          )}
+        </div>
       </div>
       <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 border-2 border-black ${cfg.color}`}>
         {cfg.label}

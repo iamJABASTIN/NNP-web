@@ -5,6 +5,7 @@ export function useOrderDetails(activeOrderId) {
   const [items, setItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [orderStatus, setOrderStatus] = useState(null);
+  const [tableNumber, setTableNumber] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -21,10 +22,10 @@ export function useOrderDetails(activeOrderId) {
       setError(null);
 
       try {
-        // Fetch the order header
+        // Fetch the order header with table info
         const { data: order, error: orderErr } = await supabase
           .from('orders')
-          .select('status, total_amount')
+          .select('status, total_amount, tables ( table_number )')
           .eq('id', activeOrderId)
           .single();
 
@@ -32,6 +33,7 @@ export function useOrderDetails(activeOrderId) {
 
         setOrderStatus(order.status);
         setTotalAmount(order.total_amount);
+        setTableNumber(order.tables?.table_number);
 
         // Fetch order items with menu item names
         const { data: orderItems, error: itemsErr } = await supabase
@@ -60,5 +62,5 @@ export function useOrderDetails(activeOrderId) {
     fetchOrderDetails();
   }, [activeOrderId]);
 
-  return { items, totalAmount, orderStatus, loading, error };
+  return { items, totalAmount, orderStatus, tableNumber, loading, error };
 }

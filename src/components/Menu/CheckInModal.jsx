@@ -10,6 +10,7 @@ const CheckInModal = ({
   orderType, setOrderType,
   manualTableName, setManualTableName,
   isTablePreset,
+  tableId,
   sessionCode, setSessionCode, 
   loading, 
   error,
@@ -18,6 +19,9 @@ const CheckInModal = ({
 }) => {
   const [step, setStep] = useState(1);
   const [localError, setLocalError] = useState(null);
+
+  // Find pre-selected table if preset
+  const presetTable = isTablePreset ? tables.find(t => t.id === tableId) : null;
 
   // Reset step when modal opens
   useEffect(() => {
@@ -34,7 +38,7 @@ const CheckInModal = ({
       return;
     }
     
-    if (orderType === 'takeout') {
+    if (orderType === 'takeout' || isTablePreset) {
       onConfirm();
     } else {
       setStep(2);
@@ -42,6 +46,7 @@ const CheckInModal = ({
   };
 
   const currentError = localError || error;
+  const isOneStep = orderType === 'takeout' || isTablePreset;
 
   return (
     <AnimatePresence>
@@ -78,7 +83,7 @@ const CheckInModal = ({
 
             <div className="mb-8">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-2">
-                Step {step} of {orderType === 'takeout' ? '1' : '2'}
+                Step {step} of {isOneStep ? '1' : '2'}
               </p>
               <h2 className="text-3xl font-black uppercase tracking-tight leading-none">
                 {step === 1 ? "Who's Dining?" : "Select your Table"}
@@ -109,6 +114,17 @@ const CheckInModal = ({
                       <span>Takeout</span>
                     </button>
                   </div>
+
+                  {/* Preset Table Badge */}
+                  {isTablePreset && orderType === 'dine_in' && presetTable && (
+                    <div className="p-3 bg-accent/10 border-2 border-dashed border-accent flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                       <div className="flex flex-col">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-accent">Ordering for</span>
+                        <span className="text-xl font-black italic">Table # {presetTable.table_number}</span>
+                       </div>
+                       <Utensils size={24} className="text-accent opacity-50" />
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest pl-1 text-black/50">Your Nickname</label>
@@ -186,7 +202,7 @@ const CheckInModal = ({
                   <>
                     <span>
                       {step === 1 
-                        ? (orderType === 'takeout' ? 'Ready to Order' : 'Select Table') 
+                        ? (isOneStep ? 'Ready to Order' : 'Select Table') 
                         : 'Confirm Order'}
                     </span>
                     <ArrowRight size={18} />
