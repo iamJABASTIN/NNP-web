@@ -4,6 +4,7 @@ import Sidebar from '../components/Admin/Sidebar';
 import AdminHeader from '../components/Admin/AdminHeader';
 import DashboardHome from '../components/Admin/DashboardHome';
 import MenuManagement from '../components/Admin/MenuManagement';
+import SessionManagement from '../components/Admin/SessionManagement';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -25,6 +26,8 @@ const AdminDashboard = () => {
           <DashboardHome />
         ) : activeTab === 'menu' ? (
           <MenuManagement />
+        ) : activeTab === 'sessions' ? (
+          <SessionManagement />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center border-4 border-black border-dashed opacity-30 select-none">
             <LayoutDashboard size={80} strokeWidth={0.5} />

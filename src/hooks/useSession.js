@@ -8,20 +8,61 @@ export function useSession() {
 
   useEffect(() => {
     // 1. Initial auth check
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        await validateSession(session.user);
+      }
+
       setLoading(false);
     });
 
     // 2. Auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        await validateSession(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const validateSession = async (user) => {
+    // Only validate anonymous users
+    if (user.app_metadata?.provider !== 'anonymous') return;
+
+    try {
+      // Check if user is linked to an active table session
+      const { data: sessionMember, error } = await supabase
+        .from('session_members')
+        .select('table_sessions(status)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      const isActive = sessionMember?.table_sessions?.status === 'active';
+
+      if (!isActive) {
+        // If not in an active session, check for 24h expiry
+        const createdAt = new Date(user.created_at).getTime();
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        if (now - createdAt > twentyFourHours) {
+          console.log('Anonymous session expired (24h), signing out...');
+          await supabase.auth.signOut();
+        }
+      }
+    } catch (err) {
+      console.error('Session validation failed:', err);
+    }
+  };
 
   // Check-in (Anonymous Login)
   const checkIn = async (nickname, mobile = null) => {

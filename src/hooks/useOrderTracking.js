@@ -38,7 +38,7 @@ export function useOrderTracking() {
 
         if (isTerminal || isSessionClosed) {
           console.log('Order terminal or session closed, clearing tracking:', { isTerminal, isSessionClosed });
-          stopTracking();
+          stopTracking(isSessionClosed);
         } else {
           setOrderStatus(data.status);
         }
@@ -68,7 +68,7 @@ export function useOrderTracking() {
           // Double check session status on terminal update
           const terminalStatuses = ['delivered', 'completed', 'cancelled', 'served'];
           if (terminalStatuses.includes(payload.new.status.toLowerCase())) {
-             stopTracking();
+             stopTracking(false);
           }
         }
       )
@@ -84,10 +84,13 @@ export function useOrderTracking() {
     setActiveOrderId(orderId);
   };
 
-  const stopTracking = () => {
+  const stopTracking = async (shouldSignOut = false) => {
     localStorage.removeItem('activeOrderId');
     setActiveOrderId(null);
     setOrderStatus(null);
+    if (shouldSignOut) {
+      await supabase.auth.signOut();
+    }
   };
 
   return { activeOrderId, orderStatus, loading, trackNewOrder, stopTracking };
