@@ -191,18 +191,16 @@ export function useMenuPage(tableId) {
       const { error: insertErr } = await supabase.from('order_items').insert(orderItems);
       if (insertErr) throw insertErr;
 
-      // Update the total_amount on the existing order
-      const addedAmount = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+      // Recalculate the total_amount by fetching all items for this order
+      // This is safer than adding to the existing total which might be stale
+      const { data: allItems, error: itemsFetchErr } = await supabase
+        .from('order_items')
+        .select('unit_price, quantity')
+        .eq('order_id', orderId);
 
-      const { data: currentOrder, error: fetchErr } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('id', orderId)
-        .single();
+      if (itemsFetchErr) throw itemsFetchErr;
 
-      if (fetchErr) throw fetchErr;
-
-      const newTotal = (currentOrder.total_amount || 0) + addedAmount;
+      const newTotal = (allItems || []).reduce((acc, item) => acc + (item.unit_price * item.quantity), 0);
 
       const { error: updateErr } = await supabase
         .from('orders')
@@ -212,7 +210,7 @@ export function useMenuPage(tableId) {
       if (updateErr) throw updateErr;
 
       setCart([]);
-      return { orderId, addedAmount, newTotal };
+      return { orderId, newTotal };
     } finally {
       setSessionLoading(false);
     }

@@ -25,14 +25,13 @@ export function useOrderDetails(activeOrderId) {
         // Fetch the order header with table info
         const { data: order, error: orderErr } = await supabase
           .from('orders')
-          .select('status, total_amount, tables ( table_number )')
+          .select('status, tables ( table_number )')
           .eq('id', activeOrderId)
           .single();
 
         if (orderErr) throw orderErr;
 
         setOrderStatus(order.status);
-        setTotalAmount(order.total_amount);
         setTableNumber(order.tables?.table_number);
 
         // Fetch order items with menu item names
@@ -52,6 +51,10 @@ export function useOrderDetails(activeOrderId) {
         }));
 
         setItems(mapped);
+        
+        // Calculate total amount from items to ensure accuracy
+        const calculatedTotal = mapped.reduce((acc, item) => acc + item.lineTotal, 0);
+        setTotalAmount(calculatedTotal);
       } catch (err) {
         setError(err.message);
       } finally {

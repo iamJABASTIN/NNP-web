@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ClipboardList, Plus, Receipt, ChefHat, CircleCheck } from 'lucide-react';
+import { ClipboardList, Plus, Receipt, ChefHat, CircleCheck, Star } from 'lucide-react';
 import { useOrderDetails } from '../../hooks/useOrderDetails';
+import { useRating } from '../../hooks/useRating';
+import BillPreviewModal from '../../components/Menu/BillPreviewModal';
+import RatingModal from '../../components/Menu/RatingModal';
 
 const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
   const { items, totalAmount, tableNumber, loading } = useOrderDetails(activeOrderId);
+  const { hasRated, isSubmitting, submitRating } = useRating(activeOrderId);
+  const [showBill, setShowBill] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [billRequested, setBillRequested] = useState(false);
+
+  const handleBillClose = () => {
+    setShowBill(false);
+    setBillRequested(true);
+    if (!hasRated) {
+      // Small delay so bill modal exit animation completes
+      setTimeout(() => setShowRating(true), 400);
+    }
+  };
+
+  const handleRatingSubmit = async (rating, feedback) => {
+    await submitRating(rating, feedback);
+  };
 
   if (!activeOrderId) {
     return <EmptyState />;
@@ -18,7 +38,28 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
     <div className="p-6 md:p-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom duration-500">
       <OrderHeader status={status} tableNumber={tableNumber} />
       <ReceiptCard items={items} totalAmount={totalAmount} />
-      <ActionButtons onSwitchToMenu={onSwitchToMenu} />
+      <ActionButtons
+        onSwitchToMenu={onSwitchToMenu}
+        onRequestBill={() => setShowBill(true)}
+        onRateExperience={() => setShowRating(true)}
+        showRateButton={billRequested && !hasRated}
+      />
+
+      <BillPreviewModal
+        show={showBill}
+        onClose={handleBillClose}
+        items={items}
+        totalAmount={totalAmount}
+        tableNumber={tableNumber}
+        orderId={activeOrderId}
+      />
+
+      <RatingModal
+        show={showRating}
+        onClose={() => setShowRating(false)}
+        onSubmit={handleRatingSubmit}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 };
@@ -133,7 +174,7 @@ const OrderItemRow = ({ item }) => (
   </motion.div>
 );
 
-const ActionButtons = ({ onSwitchToMenu }) => (
+const ActionButtons = ({ onSwitchToMenu, onRequestBill, onRateExperience, showRateButton }) => (
   <div className="flex flex-col gap-4 mt-8">
     <motion.button
       initial={{ y: 10, opacity: 0 }}
@@ -150,11 +191,25 @@ const ActionButtons = ({ onSwitchToMenu }) => (
       initial={{ y: 10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3 }}
+      onClick={onRequestBill}
       className="w-full py-5 bg-black text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 border-r-4 border-b-4 border-accent hover:translate-x-1 hover:-translate-y-1 transition-all"
     >
       <ChefHat size={18} strokeWidth={3} className="text-accent" />
       Request Bill
     </motion.button>
+
+    {showRateButton && (
+      <motion.button
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        onClick={onRateExperience}
+        className="w-full py-5 bg-white border-4 border-black font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-[6px_6px_0px_#f2ca50] hover:-translate-y-1 hover:shadow-[8px_8px_0px_#f2ca50] transition-all active:translate-y-0 active:shadow-[3px_3px_0px_#f2ca50]"
+      >
+        <Star size={18} strokeWidth={3} className="text-accent fill-accent" />
+        Rate Experience
+      </motion.button>
+    )}
   </div>
 );
 
