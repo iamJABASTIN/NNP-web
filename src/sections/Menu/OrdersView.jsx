@@ -1,21 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { ClipboardList, Plus, Receipt, ChefHat, CircleCheck, Star } from 'lucide-react';
 import { useOrderDetails } from '../../hooks/useOrderDetails';
 import { useRating } from '../../hooks/useRating';
 import BillPreviewModal from '../../components/Menu/BillPreviewModal';
 import RatingModal from '../../components/Menu/RatingModal';
+import { supabase } from '../../lib/supabase';
 
 const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
   const { items, totalAmount, tableNumber, loading } = useOrderDetails(activeOrderId);
   const { hasRated, isSubmitting, submitRating } = useRating(activeOrderId);
   const [showBill, setShowBill] = useState(false);
   const [showRating, setShowRating] = useState(false);
-  const [billRequested, setBillRequested] = useState(false);
 
   const handleBillClose = () => {
     setShowBill(false);
-    setBillRequested(true);
     if (!hasRated) {
       // Small delay so bill modal exit animation completes
       setTimeout(() => setShowRating(true), 400);
@@ -25,6 +24,18 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
   const handleRatingSubmit = async (rating, feedback) => {
     await submitRating(rating, feedback);
   };
+
+  const handleBillTaken = useCallback(async () => {
+    if (!activeOrderId) return;
+    try {
+      await supabase
+        .from('orders')
+        .update({ bill_requested_at: new Date().toISOString() })
+        .eq('id', activeOrderId);
+    } catch (err) {
+      console.error('Failed to stamp bill_requested_at:', err);
+    }
+  }, [activeOrderId]);
 
   if (!activeOrderId) {
     return <EmptyState />;
@@ -42,7 +53,7 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
         onSwitchToMenu={onSwitchToMenu}
         onRequestBill={() => setShowBill(true)}
         onRateExperience={() => setShowRating(true)}
-        showRateButton={billRequested && !hasRated}
+        hasRated={hasRated}
       />
 
       <BillPreviewModal
@@ -52,6 +63,7 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
         totalAmount={totalAmount}
         tableNumber={tableNumber}
         orderId={activeOrderId}
+        onBillTaken={handleBillTaken}
       />
 
       <RatingModal
@@ -174,7 +186,7 @@ const OrderItemRow = ({ item }) => (
   </motion.div>
 );
 
-const ActionButtons = ({ onSwitchToMenu, onRequestBill, onRateExperience, showRateButton }) => (
+const ActionButtons = ({ onSwitchToMenu, onRequestBill, onRateExperience, hasRated }) => (
   <div className="flex flex-col gap-4 mt-8">
     <motion.button
       initial={{ y: 10, opacity: 0 }}
@@ -198,7 +210,17 @@ const ActionButtons = ({ onSwitchToMenu, onRequestBill, onRateExperience, showRa
       Request Bill
     </motion.button>
 
-    {showRateButton && (
+    {hasRated ? (
+      <motion.div
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="w-full py-5 bg-green-50 border-4 border-green-200 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3"
+      >
+        <CircleCheck size={18} strokeWidth={3} className="text-green-600" />
+        <span className="text-green-700">Thanks for the review</span>
+      </motion.div>
+    ) : (
       <motion.button
         initial={{ y: 10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

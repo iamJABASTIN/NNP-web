@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
+const BILL_EXPIRY_MS = 1.5 * 60 * 60 * 1000; // 1.5 hours after bill download/share
+const INACTIVITY_EXPIRY_MS = 3 * 60 * 60 * 1000; // 3 hours of no new items
+
 export function useOrderTracking() {
   const [activeOrderId, setActiveOrderId] = useState(() => {
     return localStorage.getItem('activeOrderId');
@@ -21,6 +24,9 @@ export function useOrderTracking() {
           .from('orders')
           .select(`
             status,
+            bill_requested_at,
+            last_activity_at,
+            session_id,
             table_sessions!inner(status)
           `)
           .eq('id', activeOrderId)
@@ -39,9 +45,35 @@ export function useOrderTracking() {
         if (isTerminal || isSessionClosed) {
           console.log('Order terminal or session closed, clearing tracking:', { isTerminal, isSessionClosed });
           stopTracking(isSessionClosed);
-        } else {
-          setOrderStatus(data.status);
+          return;
         }
+
+        // --- Hybrid auto-expiry checks ---
+        const now = Date.now();
+
+        // Timer 1: 1.5hr after bill PDF was downloaded/shared
+        if (data.bill_requested_at) {
+          const elapsed = now - new Date(data.bill_requested_at).getTime();
+          if (elapsed > BILL_EXPIRY_MS) {
+            console.log('Bill expiry reached (1.5hr since download), closing session');
+            await closeSessionInDB(data.session_id);
+            stopTracking(true);
+            return;
+          }
+        }
+
+        // Timer 2: 3hr since last item was added (inactivity)
+        if (data.last_activity_at) {
+          const elapsed = now - new Date(data.last_activity_at).getTime();
+          if (elapsed > INACTIVITY_EXPIRY_MS) {
+            console.log('Inactivity expiry reached (3hr since last item), closing session');
+            await closeSessionInDB(data.session_id);
+            stopTracking(true);
+            return;
+          }
+        }
+
+        setOrderStatus(data.status);
       } catch (err) {
         console.error('Order validation failed:', err);
       } finally {
@@ -82,6 +114,18 @@ export function useOrderTracking() {
   const trackNewOrder = (orderId) => {
     localStorage.setItem('activeOrderId', orderId);
     setActiveOrderId(orderId);
+  };
+
+  const closeSessionInDB = async (sessionId) => {
+    if (!sessionId) return;
+    try {
+      await supabase
+        .from('table_sessions')
+        .update({ status: 'completed', closed_at: new Date().toISOString() })
+        .eq('id', sessionId);
+    } catch (err) {
+      console.error('Failed to close session in DB:', err);
+    }
   };
 
   const stopTracking = async (shouldSignOut = false) => {

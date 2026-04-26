@@ -138,7 +138,8 @@ export function useMenuPage(tableId) {
           user_id: currentUser.id,
           restaurant_id: session.restaurant_id,
           table_id: resolvedTableId,
-          total_amount: totalAmount
+          total_amount: totalAmount,
+          last_activity_at: new Date().toISOString()
         })
         .select()
         .single();
@@ -204,7 +205,11 @@ export function useMenuPage(tableId) {
 
       const { error: updateErr } = await supabase
         .from('orders')
-        .update({ total_amount: newTotal })
+        .update({
+          total_amount: newTotal,
+          bill_requested_at: null,
+          last_activity_at: new Date().toISOString()
+        })
         .eq('id', orderId);
 
       if (updateErr) throw updateErr;

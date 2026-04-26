@@ -4,14 +4,20 @@ import { X, Download, Share2, Loader2 } from 'lucide-react';
 import BillReceipt from './BillReceipt';
 import { useBillGeneration } from '../../hooks/useBillGeneration';
 
-const BillPreviewModal = ({ show, onClose, items, totalAmount, tableNumber, orderId }) => {
+const BillPreviewModal = ({ show, onClose, items, totalAmount, tableNumber, orderId, onBillTaken }) => {
   const receiptRef = useRef(null);
   const { downloadPDF, sharePDF, canShare, isGenerating } = useBillGeneration();
 
   const filename = `bill-table${tableNumber || 'X'}-${Date.now()}`;
 
-  const handleDownload = () => downloadPDF(receiptRef, filename);
-  const handleShare = () => sharePDF(receiptRef, filename);
+  const handleDownload = async () => {
+    await downloadPDF(receiptRef, filename);
+    onBillTaken?.();
+  };
+  const handleShare = async () => {
+    await sharePDF(receiptRef, filename);
+    onBillTaken?.();
+  };
 
   return (
     <AnimatePresence>
