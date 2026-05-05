@@ -6,7 +6,6 @@ import {
   BarChart3,
   Star,
   Utensils,
-  MessageSquare,
   Settings,
   Clock
 } from 'lucide-react';
@@ -32,7 +31,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         <SidebarItem icon={Users} label="Customer" active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} />
         <SidebarItem icon={BarChart3} label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
         <SidebarItem icon={Star} label="Reviews" active={activeTab === 'reviews'} onClick={() => setActiveTab('reviews')} />
-        <SidebarItem icon={MessageSquare} label="Chat" active={activeTab === 'chat'} onClick={() => setActiveTab('chat')} />
         <SidebarItem icon={Settings} label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
       </nav>
     </aside>
