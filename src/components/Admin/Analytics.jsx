@@ -3,19 +3,13 @@ import { supabase } from '../../lib/supabase';
 import { TrendingUp, ShoppingBag, DollarSign, Users } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell,
   AreaChart, Area,
 } from 'recharts';
 import { BORDER_BLACK, PRIMARY_YELLOW, SHADOW_BLACK } from '../../constants/adminStyles';
 
-const PIE_COLORS = {
-  pending: '#fbbf24', confirmed: '#60a5fa', preparing: '#fb923c',
-  ready: '#34d399', served: '#a78bfa', completed: '#9ca3af', cancelled: '#f87171',
-};
-
 const Analytics = () => {
   const [stats, setStats] = useState({ total: 0, revenue: 0, avgValue: 0, customers: 0 });
-  const [statusData, setStatusData] = useState([]);
+  const [peakHoursData, setPeakHoursData] = useState([]);
   const [topItems, setTopItems] = useState([]);
   const [dailyData, setDailyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +19,7 @@ const Analytics = () => {
       setLoading(true);
 
       // All orders
-      const { data: orders } = await supabase.from('orders').select('id, status, total_amount, placed_at, user_id');
+      const { data: orders } = await supabase.from('orders').select('id, total_amount, placed_at, user_id');
 
       // Order items with menu names
       const { data: items } = await supabase.from('order_items').select('menu_item_id, quantity, unit_price, menu_items(name)');
@@ -41,10 +35,24 @@ const Analytics = () => {
         customers: uniqueCustomers,
       });
 
-      // Status breakdown
-      const statusMap = {};
-      allOrders.forEach(o => { statusMap[o.status] = (statusMap[o.status] || 0) + 1; });
-      setStatusData(Object.entries(statusMap).map(([name, value]) => ({ name, value })));
+      // Peak Hours — group orders by hour of day
+      const hourMap = {};
+      allOrders.forEach(o => {
+        if (!o.placed_at) return;
+        const hour = new Date(o.placed_at).getHours();
+        hourMap[hour] = (hourMap[hour] || 0) + 1;
+      });
+
+      // Build full hour range from data (or default 10 AM–10 PM)
+      const hours = Object.keys(hourMap).map(Number).sort((a, b) => a - b);
+      const minHour = hours.length > 0 ? Math.min(...hours) : 10;
+      const maxHour = hours.length > 0 ? Math.max(...hours) : 22;
+      const peakHours = [];
+      for (let h = minHour; h <= maxHour; h++) {
+        const label = `${h > 12 ? h - 12 : h || 12}${h >= 12 ? 'PM' : 'AM'}`;
+        peakHours.push({ hour: label, orders: hourMap[h] || 0 });
+      }
+      setPeakHoursData(peakHours);
 
       // Top selling items
       const itemMap = {};
@@ -99,23 +107,37 @@ const Analytics = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Orders by Status — Pie */}
-        <div className={`lg:col-span-4 bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
-          <h4 className="text-lg font-black uppercase tracking-tighter mb-6">Orders by Status</h4>
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} stroke="#000" strokeWidth={2} label={({ name, value }) => `${name} (${value})`}>
-                  {statusData.map((entry) => (<Cell key={entry.name} fill={PIE_COLORS[entry.name] || '#ccc'} />))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        {/* Peak Hours — Bar Chart */}
+        <div className={`lg:col-span-5 bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+          <h4 className="text-lg font-black uppercase tracking-tighter mb-6">Peak Hours</h4>
+          {peakHoursData.length === 0 ? (
+            <p className="text-center text-black/30 font-black uppercase tracking-widest py-8">No order data yet</p>
+          ) : (
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={peakHoursData}>
+                  <XAxis dataKey="hour" tick={{ fontSize: 9, fontWeight: 900 }} interval={0} angle={-45} textAnchor="end" height={50} />
+                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload?.[0]) return (
+                        <div className={`bg-black text-white p-3 font-black text-[11px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
+                          <p className="uppercase tracking-widest">{payload[0].payload.hour}</p>
+                          <p className="text-[#f2ca50] mt-1">{payload[0].value} orders</p>
+                        </div>
+                      );
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="orders" fill={PRIMARY_YELLOW} stroke="#000" strokeWidth={2} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         {/* Daily Revenue — Area */}
-        <div className={`lg:col-span-8 bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-7 bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <h4 className="text-lg font-black uppercase tracking-tighter mb-6">Revenue Trend (7 Days)</h4>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">

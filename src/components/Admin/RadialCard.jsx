@@ -1,7 +1,7 @@
 import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const RadialCard = ({ value, label, color }) => {
+const RadialCard = ({ value, displayValue, label, color }) => {
   const data = [{ value }, { value: 100 - value }];
   return (
     <div className="flex flex-col items-center gap-3">
@@ -24,10 +24,10 @@ const RadialCard = ({ value, label, color }) => {
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xl font-black">{value}%</span>
+          <span className="text-lg font-black">{displayValue ?? `${value}%`}</span>
         </div>
       </div>
-      <p className="text-[10px] font-black uppercase tracking-[0.2em]">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.15em] whitespace-nowrap">{label}</p>
     </div>
   );
 };

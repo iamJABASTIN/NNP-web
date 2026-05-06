@@ -19,7 +19,7 @@ const PrinciMahal = () => (
         />
       </motion.div>
       <div className="lg:col-span-4 space-y-6 sm:space-y-8 lg:pb-12">
-        <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none">Princi<br />Mahal.</h2>
+        <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none">Princy<br />Mahal.</h2>
         <p className="text-lg leading-snug">An intimate venue perfectly suited for special moments—from birthday celebrations and farewells to cozy get-togethers.</p>
         <div className="space-y-4 border-t-2 border-black pt-8">
           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">

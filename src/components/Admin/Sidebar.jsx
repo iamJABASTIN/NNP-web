@@ -16,11 +16,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   return (
     <aside className={`w-80 bg-white ${BORDER_BLACK} flex flex-col py-10 shadow-[8px_8px_0px_#000000]`}>
       <div className="px-8 mb-16 flex items-center gap-3">
-        <div className="flex flex-col gap-1">
-           <div className="w-10 h-4 bg-black rounded-none-none"></div>
-           <div className={`w-10 h-4 bg-[${PRIMARY_YELLOW}] rounded-none-none translate-x-4 -mt-1 border-2 border-black`}></div>
-        </div>
-        <h1 className="text-3xl font-black tracking-tighter uppercase italic">Food.</h1>
+        <h1 className="text-3xl font-black tracking-tighter uppercase">New Nellai Punjabi</h1>
       </div>
 
       <nav className="flex-1 space-y-2 overflow-y-auto px-2">

@@ -21,32 +21,54 @@ const ReviewsList = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('reviews')
-        .select('*, orders(total_amount, tables(table_number))')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            orders (
+              total_amount,
+              kot_number,
+              tables (table_number),
+              order_items (
+                quantity,
+                menu_items (name)
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
 
-      // Get user names separately (reviews.user_id is nullable)
-      const reviewData = data || [];
-      const userIds = [...new Set(reviewData.map(r => r.user_id).filter(Boolean))];
-      let userMap = {};
-      if (userIds.length > 0) {
-        const { data: users } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
-        (users || []).forEach(u => { userMap[u.id] = u.display_name; });
+        if (error) throw error;
+
+        const reviewData = data || [];
+        const userIds = [...new Set(reviewData.map(r => r.user_id).filter(Boolean))];
+        let userMap = {};
+        if (userIds.length > 0) {
+          const { data: users } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
+          (users || []).forEach(u => { userMap[u.id] = u.display_name; });
+        }
+
+        const enriched = reviewData.map(r => ({
+          ...r,
+          display_name: userMap[r.user_id] || 'Anonymous User',
+          table_number: r.orders?.tables?.table_number,
+          order_total: r.orders?.total_amount,
+          kot_number: r.orders?.kot_number,
+          items: r.orders?.order_items?.map(oi => ({
+            name: oi.menu_items?.name,
+            qty: oi.quantity
+          })) || []
+        }));
+
+        setReviews(enriched);
+        if (enriched.length > 0) {
+          setAvgRating(enriched.reduce((s, r) => s + r.rating, 0) / enriched.length);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+      } finally {
+        setLoading(false);
       }
-
-      const enriched = reviewData.map(r => ({
-        ...r,
-        display_name: userMap[r.user_id] || 'Anonymous',
-        table_number: r.orders?.tables?.table_number,
-        order_total: r.orders?.total_amount,
-      }));
-
-      setReviews(enriched);
-      if (enriched.length > 0) {
-        setAvgRating(enriched.reduce((s, r) => s + r.rating, 0) / enriched.length);
-      }
-      setLoading(false);
     };
     fetchReviews();
   }, []);
@@ -88,19 +110,47 @@ const ReviewsList = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {reviews.map(r => (
             <div key={r.id} className={`bg-white p-6 ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] hover:-translate-y-0.5 transition-all`}>
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-4 pb-4 border-b-2 border-black/5">
                 <div>
-                  <p className="font-black text-sm uppercase">{r.display_name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-black text-sm uppercase tracking-tight">{r.display_name}</p>
+                    {r.kot_number && (
+                      <span className="text-[8px] font-black bg-black text-white px-1.5 py-0.5 uppercase tracking-tighter">
+                        {r.kot_number}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-black/40 font-bold">{formatDate(r.created_at)}</p>
                 </div>
                 <StarDisplay rating={r.rating} />
               </div>
+
               {r.feedback && (
-                <p className="text-sm text-black/70 italic border-l-4 border-black pl-3 mb-3">"{r.feedback}"</p>
+                <div className="mb-4">
+                  <p className="text-sm text-black/70 font-medium italic border-l-4 border-black pl-3 bg-black/[0.02] py-2">
+                    "{r.feedback}"
+                  </p>
+                </div>
               )}
-              <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-black/30">
-                {r.table_number && <span>Table {r.table_number}</span>}
-                {r.order_total && <span>₹{r.order_total}</span>}
+
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {r.items.map((item, idx) => (
+                    <span key={idx} className="text-[9px] font-black uppercase bg-accent/20 px-2 py-0.5 border border-black/10">
+                      {item.qty}x {item.name}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-black/5">
+                  <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-black/30">
+                    {r.table_number && <span>Table {r.table_number}</span>}
+                    {r.order_total && <span>₹{r.order_total}</span>}
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-black/20">
+                    Order ID: ...{r.order_id?.slice(-8)}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

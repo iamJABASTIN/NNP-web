@@ -1,53 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ChevronDown, ChevronUp, Package, RefreshCw, ArrowRight } from 'lucide-react';
-import { BORDER_BLACK, PRIMARY_YELLOW, SHADOW_BLACK } from '../../constants/adminStyles';
-
-const STATUSES = ['all', 'pending', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
-
-const STATUS_COLORS = {
-  pending: 'bg-yellow-200', confirmed: 'bg-blue-200', preparing: 'bg-orange-200',
-  ready: 'bg-green-200', served: 'bg-purple-200', completed: 'bg-gray-200', cancelled: 'bg-red-200',
-};
-
-const NEXT_STATUS = {
-  pending: 'confirmed', confirmed: 'preparing', preparing: 'ready', ready: 'served', served: 'completed',
-};
+import { ChevronDown, ChevronUp, Package, RefreshCw } from 'lucide-react';
+import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
 
   const fetchOrders = async () => {
     setLoading(true);
-    let query = supabase
+    const { data } = await supabase
       .from('orders')
       .select('*, tables(table_number), profiles(display_name, phone), order_items(*, menu_items(name))')
       .order('placed_at', { ascending: false });
-    if (filter !== 'all') query = query.eq('status', filter);
-    const { data } = await query;
     setOrders(data || []);
     setLoading(false);
   };
 
-  useEffect(() => { fetchOrders(); }, [filter]);
-
-  const updateStatus = async (id, status) => {
-    const updates = { status };
-    if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
-    if (status === 'ready') updates.ready_at = new Date().toISOString();
-    if (status === 'served') updates.served_at = new Date().toISOString();
-    await supabase.from('orders').update(updates).eq('id', id);
-    fetchOrders();
-  };
-
-  const cancelOrder = async (id) => {
-    if (!window.confirm('Cancel this order?')) return;
-    await supabase.from('orders').update({ status: 'cancelled' }).eq('id', id);
-    fetchOrders();
-  };
+  useEffect(() => { fetchOrders(); }, []);
 
   const formatTime = (iso) =>
     iso ? new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -63,29 +34,19 @@ const OrderList = () => {
         </button>
       </div>
 
-      {/* Status filter pills */}
-      <div className="flex flex-wrap gap-2">
-        {STATUSES.map(s => (
-          <button key={s} onClick={() => setFilter(s)}
-            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest border-2 border-black transition-all
-              ${filter === s ? 'bg-black text-white shadow-[4px_4px_0px_#f2ca50]' : 'bg-white hover:bg-gray-100'}`}
-          >{s}</button>
-        ))}
-      </div>
-
       {orders.length === 0 ? (
         <div className={`flex flex-col items-center justify-center p-16 ${BORDER_BLACK} bg-white ${SHADOW_BLACK}`}>
           <Package size={64} strokeWidth={1} className="opacity-20 mb-4" />
           <h3 className="text-2xl font-black uppercase italic">No Orders Found</h3>
-          <p className="text-gray-400 font-medium uppercase tracking-widest text-xs mt-2">Try a different filter</p>
+          <p className="text-gray-400 font-medium uppercase tracking-widest text-xs mt-2">Orders will appear here once placed</p>
         </div>
       ) : (
         <div className={`${BORDER_BLACK} bg-white ${SHADOW_BLACK} overflow-hidden`}>
           <table className="w-full text-left">
             <thead className="bg-black text-white">
               <tr>
-                {['Order', 'Table', 'Customer', 'Total', 'Status', 'Time', 'Actions'].map(h => (
-                  <th key={h} className={`p-4 font-black uppercase tracking-widest text-xs ${h === 'Actions' ? 'text-right' : ''}`}>{h}</th>
+                {['Order', 'Table', 'Customer', 'Items', 'Total', 'Time'].map(h => (
+                  <th key={h} className="p-4 font-black uppercase tracking-widest text-xs">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -101,33 +62,13 @@ const OrderList = () => {
                     </td>
                     <td className="p-4 font-black text-xs">T-{order.tables?.table_number || '?'}</td>
                     <td className="p-4 font-black text-xs">{order.profiles?.display_name || 'Guest'}</td>
+                    <td className="p-4 font-black text-xs">{order.order_items?.length || 0} items</td>
                     <td className="p-4 font-black text-sm italic">₹{order.total_amount}</td>
-                    <td className="p-4">
-                      <span className={`px-3 py-1 border-2 border-black text-[10px] font-black uppercase ${STATUS_COLORS[order.status] || 'bg-gray-100'}`}>
-                        {order.status}
-                      </span>
-                    </td>
                     <td className="p-4 text-[10px] font-bold text-black/50">{formatTime(order.placed_at)}</td>
-                    <td className="p-4 text-right" onClick={e => e.stopPropagation()}>
-                      <div className="flex items-center gap-2 justify-end">
-                        {NEXT_STATUS[order.status] && (
-                          <button onClick={() => updateStatus(order.id, NEXT_STATUS[order.status])}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-wider border-2 border-black hover:bg-[#f2ca50] hover:text-black transition-all">
-                            {NEXT_STATUS[order.status]} <ArrowRight size={12} />
-                          </button>
-                        )}
-                        {order.status !== 'cancelled' && order.status !== 'completed' && (
-                          <button onClick={() => cancelOrder(order.id)}
-                            className="px-3 py-1.5 bg-white text-red-600 text-[10px] font-black uppercase border-2 border-black hover:bg-red-600 hover:text-white transition-all">
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    </td>
                   </tr>
                   {expandedId === order.id && (
                     <tr>
-                      <td colSpan={7} className="bg-[#f2ca50]/10 p-6 border-t-2 border-black/10">
+                      <td colSpan={6} className="bg-[#f2ca50]/10 p-6 border-t-2 border-black/10">
                         <p className="text-[10px] font-black uppercase tracking-widest mb-3 text-black/40">Order Items</p>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           {order.order_items?.map(item => (

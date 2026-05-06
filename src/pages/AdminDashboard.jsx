@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Admin/Sidebar';
-import AdminHeader from '../components/Admin/AdminHeader';
 import DashboardHome from '../components/Admin/DashboardHome';
 import MenuManagement from '../components/Admin/MenuManagement';
 import SessionManagement from '../components/Admin/SessionManagement';
@@ -34,10 +33,7 @@ const AdminDashboard = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Dashboard Area */}
-      <div className="flex-1 flex flex-col gap-8 overflow-y-auto pr-2">
-        
-        {/* Header */}
-        <AdminHeader />
+      <div className="flex-1 flex flex-col gap-8 overflow-y-auto p-3">
 
         {/* Dynamic Content Section */}
         {renderContent()}

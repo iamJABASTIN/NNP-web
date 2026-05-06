@@ -18,7 +18,7 @@ import {
 const DashboardHome = () => {
   const [loading, setLoading] = useState(true);
   const [summaryData, setSummaryData] = useState([]);
-  const [performanceData, setPerformanceData] = useState([]);
+  const [marketMetrics, setMarketMetrics] = useState([]);
   const [activityData, setActivityData] = useState([]);
   const [topItems, setTopItems] = useState([]);
   const [staff, setStaff] = useState([]);
@@ -28,29 +28,107 @@ const DashboardHome = () => {
       setLoading(true);
 
       // Fetch orders
-      const { data: orders } = await supabase.from('orders').select('id, status, total_amount, placed_at');
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id, status, total_amount, placed_at, user_id');
       const all = orders || [];
       const totalOrders = all.length;
-      const delivered = all.filter(o => ['served', 'completed'].includes(o.status)).length;
-      const cancelled = all.filter(o => o.status === 'cancelled').length;
       const totalRevenue = all.reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
+      const uniqueCustomers = new Set(all.map(o => o.user_id)).size;
 
       // Generate mini chart data from recent orders
-      const genChart = (arr) => arr.length === 0 ? [0,0,0,0,0,0,0] : arr.slice(0, 14).map(o => parseFloat(o.total_amount || 0));
+      const genChart = (arr) =>
+        arr.length === 0
+          ? [0, 0, 0, 0, 0, 0, 0]
+          : arr.slice(0, 14).map(o => parseFloat(o.total_amount || 0));
 
       setSummaryData([
-        { name: 'Total Orders', value: totalOrders, change: totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0, color: '#ffffff', chartData: genChart(all) },
-        { name: 'Total Delivered', value: delivered, change: totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0, color: PRIMARY_YELLOW, chartData: genChart(all.filter(o => ['served', 'completed'].includes(o.status))) },
-        { name: 'Total Canceled', value: cancelled, change: totalOrders > 0 ? Math.round((cancelled / totalOrders) * 100) : 0, color: '#ffffff', isNegative: true, chartData: genChart(all.filter(o => o.status === 'cancelled')) },
+        {
+          name: 'Total Orders',
+          value: totalOrders,
+          change: totalOrders,
+          color: '#ffffff',
+          chartData: genChart(all),
+        },
+        {
+          name: 'Total Revenue',
+          value: `₹${totalRevenue.toFixed(0)}`,
+          change: totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0,
+          color: PRIMARY_YELLOW,
+          chartData: genChart(all),
+        },
+        {
+          name: 'Total Customers',
+          value: uniqueCustomers,
+          change: uniqueCustomers,
+          color: '#ffffff',
+          chartData: genChart(all),
+        },
       ]);
 
-      // Performance (completion rate, cost efficiency, revenue)
-      const completionRate = totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
-      const cancelRate = totalOrders > 0 ? 100 - Math.round((cancelled / totalOrders) * 100) : 100;
-      setPerformanceData([
-        { name: 'Completion', value: completionRate, color: '#000000' },
-        { name: 'Success Rate', value: cancelRate, color: PRIMARY_YELLOW },
-        { name: 'Fulfillment', value: Math.min(completionRate + 10, 100), color: '#000000' },
+      // --- Market Metrics ---
+
+      // 1. Avg Order Value
+      const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+
+      // 2. Profit Margin — from order_items with cost data
+      const { data: items } = await supabase
+        .from('order_items')
+        .select('quantity, unit_price, unit_cost, menu_items(name, cost_price)');
+
+      let totalSaleValue = 0;
+      let totalCostValue = 0;
+      (items || []).forEach(i => {
+        const qty = i.quantity || 0;
+        const price = parseFloat(i.unit_price || 0);
+        const cost = parseFloat(i.unit_cost || i.menu_items?.cost_price || 0);
+        totalSaleValue += qty * price;
+        totalCostValue += qty * cost;
+      });
+      const profitMargin =
+        totalSaleValue > 0
+          ? Math.round(((totalSaleValue - totalCostValue) / totalSaleValue) * 100)
+          : 0;
+
+      // 3. Peak Hour
+      const hourMap = {};
+      all.forEach(o => {
+        if (!o.placed_at) return;
+        const hour = new Date(o.placed_at).getHours();
+        hourMap[hour] = (hourMap[hour] || 0) + 1;
+      });
+      let peakHour = null;
+      let peakCount = 0;
+      Object.entries(hourMap).forEach(([h, count]) => {
+        if (count > peakCount) {
+          peakCount = count;
+          peakHour = parseInt(h);
+        }
+      });
+      const peakHourLabel = peakHour !== null
+        ? `${peakHour > 12 ? peakHour - 12 : peakHour || 12} ${peakHour >= 12 ? 'PM' : 'AM'}`
+        : 'N/A';
+      const peakHourFill = peakHour !== null ? Math.min(Math.round((peakCount / totalOrders) * 100), 100) : 0;
+
+      setMarketMetrics([
+        {
+          name: 'Avg. Order Value',
+          value: Math.min(avgOrderValue > 0 ? Math.round((avgOrderValue / 1000) * 100) : 0, 100),
+          displayValue: `₹${avgOrderValue}`,
+          color: '#000000',
+        },
+        {
+          name: 'Profit Margin',
+          value: profitMargin,
+          displayValue: `${profitMargin}%`,
+          color: PRIMARY_YELLOW,
+        },
+        {
+          name: 'Peak Hour',
+          value: peakHourFill,
+          displayValue: peakHourLabel,
+          color: '#000000',
+        },
       ]);
 
       // Weekly activity (last 7 days)
@@ -64,7 +142,6 @@ const DashboardHome = () => {
       setActivityData(days);
 
       // Top selling items
-      const { data: items } = await supabase.from('order_items').select('quantity, unit_price, menu_items(name)');
       const itemMap = {};
       (items || []).forEach(i => {
         const name = i.menu_items?.name || 'Unknown';
@@ -105,30 +182,26 @@ const DashboardHome = () => {
 
       {/* Middle Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Pie Chart Card */}
-        <div className={`lg:col-span-5 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        {/* Market Metrics Card */}
+        <div className={`lg:col-span-5 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <div className="flex items-center justify-between mb-8">
             <h4 className="text-xl font-black uppercase tracking-tighter">Market Metrics</h4>
-            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-tighter">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-none-none border-2 border-black"></div>
-                <span>Data</span>
-              </div>
-              <div className="flex items-center gap-2 text-[#f2ca50]">
-                <div className="w-3 h-3 rounded-none-none bg-[#f2ca50] border-2 border-black"></div>
-                <span>Value</span>
-              </div>
-            </div>
           </div>
-          <div className="flex justify-between items-center px-4">
-            {performanceData.map((stat, i) => (
-              <RadialCard key={i} label={stat.name} value={stat.value} color={stat.color} />
+          <div className="flex flex-wrap justify-around items-center gap-6">
+            {marketMetrics.map((stat, i) => (
+              <RadialCard
+                key={i}
+                label={stat.name}
+                value={stat.value}
+                displayValue={stat.displayValue}
+                color={stat.color}
+              />
             ))}
           </div>
         </div>
 
         {/* Activity Chart Card */}
-        <div className={`lg:col-span-7 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-7 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <div className="flex justify-between items-start mb-8">
             <div>
               <p className="text-[12px] font-black text-black/60 uppercase tracking-[0.3em] mb-2">Weekly Activity Index</p>
@@ -156,7 +229,7 @@ const DashboardHome = () => {
                 <Tooltip 
                   content={({ active, payload }) => {
                     if (active && payload?.[0]) return (
-                      <div className={`bg-black text-white p-4 rounded-none-none font-black text-[12px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
+                      <div className={`bg-black text-white p-4 rounded-none font-black text-[12px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
                         <p className="mb-1 uppercase tracking-widest">{payload[0].payload.day}</p>
                         <p className="text-[#f2ca50]">ORDERS: {payload[0].value}</p>
                       </div>
@@ -176,8 +249,8 @@ const DashboardHome = () => {
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
         
-        {/* Top Items (was Transactions) */}
-        <div className={`lg:col-span-8 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        {/* Top Items */}
+        <div className={`lg:col-span-8 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <div className="flex items-center justify-between mb-8">
             <h4 className="text-xl font-black uppercase tracking-tighter underline underline-offset-8 decoration-4 decoration-[#f2ca50]">Top Sellers</h4>
           </div>
@@ -217,7 +290,7 @@ const DashboardHome = () => {
         </div>
 
         {/* Team */}
-        <div className={`lg:col-span-4 bg-white p-10 rounded-none-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+        <div className={`lg:col-span-4 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
           <h4 className="text-xl font-black uppercase mb-8 tracking-tighter">Team</h4>
           <div className="space-y-6">
             {staff.length === 0 ? (
