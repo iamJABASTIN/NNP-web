@@ -2,19 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Users, Search } from 'lucide-react';
 import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
+import TimeRangeFilter from './TimeRangeFilter';
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [range, setRange] = useState({ type: 'month', start: '', end: '' }); // Default to month for customers
 
   const fetchCustomers = async () => {
     setLoading(true);
-    const { data: profiles } = await supabase
+    let query = supabase
       .from('profiles')
       .select('id, display_name, phone, avatar_url, role, is_active, created_at')
-      .eq('role', 'customer')
-      .order('created_at', { ascending: false });
+      .eq('role', 'customer');
+
+    const now = new Date();
+    if (range.type === 'today') {
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      query = query.gte('created_at', startOfDay);
+    } else if (range.type === 'week') {
+      const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      query = query.gte('created_at', lastWeek);
+    } else if (range.type === 'month') {
+      const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+      query = query.gte('created_at', lastMonth);
+    } else if (range.type === 'custom' && range.start && range.end) {
+      query = query.gte('created_at', range.start).lte('created_at', `${range.end}T23:59:59`);
+    }
+
+    const { data: profiles } = await query.order('created_at', { ascending: false });
 
     const { data: orders } = await supabase.from('orders').select('user_id, total_amount');
 
@@ -33,7 +50,7 @@ const CustomerList = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCustomers(); }, []);
+  useEffect(() => { fetchCustomers(); }, [range]);
 
   const filtered = customers.filter(c =>
     !search || (c.display_name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -49,13 +66,12 @@ const CustomerList = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Customers</h2>
-          <p className="text-gray-400 font-medium uppercase tracking-widest text-xs mt-1">{customers.length} registered</p>
+          <p className="text-gray-400 font-medium uppercase tracking-widest text-[10px] mt-1">
+            {range.type === 'today' ? "Joined Today" : range.type === 'week' ? "Joined Last 7 Days" : range.type === 'month' ? "Joined Last 30 Days" : "Custom Join Range"}
+          </p>
         </div>
-        <div className="relative w-72">
-          <input type="text" placeholder="SEARCH BY NAME OR PHONE..."
-            className={`w-full pl-4 pr-12 py-3 ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] font-black text-xs uppercase tracking-widest focus:outline-none`}
-            value={search} onChange={e => setSearch(e.target.value)} />
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-black" size={18} strokeWidth={3} />
+        <div className="flex items-center gap-4">
+          <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
         </div>
       </div>
 
@@ -69,7 +85,7 @@ const CustomerList = () => {
           <table className="w-full text-left">
             <thead className="bg-black text-white">
               <tr>
-                {['Customer', 'Phone', 'Orders', 'Total Spent', 'Joined', 'Status'].map(h => (
+                {['Customer', 'Phone', 'Orders', 'Total Spent', 'Joined'].map(h => (
                   <th key={h} className="p-4 font-black uppercase tracking-widest text-xs">{h}</th>
                 ))}
               </tr>
@@ -95,12 +111,6 @@ const CustomerList = () => {
                   </td>
                   <td className="p-4 font-black text-sm italic">₹{c.total_spent.toFixed(0)}</td>
                   <td className="p-4 text-[10px] font-bold text-black/50">{formatDate(c.created_at)}</td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 border-2 border-black ${c.is_active ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span className="text-[10px] font-black uppercase">{c.is_active ? 'Active' : 'Inactive'}</span>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>

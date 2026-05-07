@@ -7,7 +7,6 @@ import {
   Star,
   Utensils,
   Settings,
-  Clock
 } from 'lucide-react';
 import SidebarItem from './SidebarItem';
 import { BORDER_BLACK, PRIMARY_YELLOW } from '../../constants/adminStyles';
@@ -22,7 +21,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       <nav className="flex-1 space-y-2 overflow-y-auto px-2">
         <SidebarItem icon={LayoutGrid} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
         <SidebarItem icon={Utensils} label="Menu Items" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
-        <SidebarItem icon={Clock} label="Sessions" active={activeTab === 'sessions'} onClick={() => setActiveTab('sessions')} />
         <SidebarItem icon={ListOrdered} label="Order List" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
         <SidebarItem icon={Users} label="Customer" active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} />
         <SidebarItem icon={BarChart3} label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Utensils, MoreVertical, Loader2 } from 'lucide-react';
+import { Utensils, MoreVertical, Loader2, Star } from 'lucide-react';
 import { 
   AreaChart, 
   Area, 
@@ -21,7 +21,7 @@ const DashboardHome = () => {
   const [marketMetrics, setMarketMetrics] = useState([]);
   const [activityData, setActivityData] = useState([]);
   const [topItems, setTopItems] = useState([]);
-  const [staff, setStaff] = useState([]);
+  const [recentReviews, setRecentReviews] = useState([]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -151,12 +151,18 @@ const DashboardHome = () => {
       });
       setTopItems(Object.values(itemMap).sort((a, b) => b.revenue - a.revenue).slice(0, 5));
 
-      // Staff
-      const { data: staffData } = await supabase
-        .from('profiles')
-        .select('display_name, role, avatar_url')
-        .in('role', ['admin', 'cook', 'waiter']);
-      setStaff(staffData || []);
+      // Recent Reviews
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('id, rating, feedback, created_at, orders(id, profiles(display_name))')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setRecentReviews((reviewsData || []).map(r => ({
+        name: r.orders?.profiles?.display_name || 'Guest',
+        rating: r.rating,
+        feedback: r.feedback,
+        date: r.created_at,
+      })));
 
       setLoading(false);
     };
@@ -289,28 +295,34 @@ const DashboardHome = () => {
           </table>
         </div>
 
-        {/* Team */}
+        {/* Recent Reviews */}
         <div className={`lg:col-span-4 bg-white p-10 rounded-none ${BORDER_BLACK} ${SHADOW_BLACK}`}>
-          <h4 className="text-xl font-black uppercase mb-8 tracking-tighter">Team</h4>
-          <div className="space-y-6">
-            {staff.length === 0 ? (
-              <p className="text-center text-black/30 uppercase tracking-widest text-xs py-4">No staff profiles</p>
-            ) : staff.map((emp, i) => (
-              <div key={i} className="flex items-center justify-between border-b-2 border-black/5 pb-4 last:border-0 last:pb-0">
-                <div className="flex items-center gap-4">
-                  {emp.avatar_url ? (
-                    <img src={emp.avatar_url} alt="" className={`w-10 h-10 border-2 border-black shadow-[2px_2px_0px_#000000]`} />
-                  ) : (
-                    <div className="w-10 h-10 border-2 border-black bg-[#f2ca50] flex items-center justify-center font-black shadow-[2px_2px_0px_#000000]">
-                      {(emp.display_name || '?')[0].toUpperCase()}
+          <h4 className="text-xl font-black uppercase mb-8 tracking-tighter">Recent Reviews</h4>
+          <div className="space-y-5">
+            {recentReviews.length === 0 ? (
+              <p className="text-center text-black/30 uppercase tracking-widest text-xs py-4">No reviews yet</p>
+            ) : recentReviews.map((review, i) => (
+              <div key={i} className="border-b-2 border-black/5 pb-4 last:border-0 last:pb-0">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-black bg-accent flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_#000000]">
+                      {(review.name || '?')[0].toUpperCase()}
                     </div>
-                  )}
-                  <div>
-                    <p className="text-[12px] font-black uppercase leading-none">{emp.display_name || 'Staff'}</p>
-                    <p className="text-[8px] font-black text-black/40 uppercase tracking-widest">{emp.role}</p>
+                    <span className="text-[11px] font-black uppercase">{review.name}</span>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} size={12} strokeWidth={2.5}
+                        className={s <= review.rating ? 'fill-accent text-accent' : 'text-black/15'}
+                      />
+                    ))}
                   </div>
                 </div>
-                <span className="text-[9px] font-black p-1.5 bg-black text-white uppercase">{emp.role}</span>
+                {review.feedback && (
+                  <p className="text-[10px] text-black/50 font-bold leading-relaxed line-clamp-2 pl-11">
+                    "{review.feedback}"
+                  </p>
+                )}
               </div>
             ))}
           </div>

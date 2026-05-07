@@ -2,23 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ChevronDown, ChevronUp, Package, RefreshCw } from 'lucide-react';
 import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
+import TimeRangeFilter from './TimeRangeFilter';
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const [range, setRange] = useState({ type: 'today', start: '', end: '' });
 
   const fetchOrders = async () => {
     setLoading(true);
-    const { data } = await supabase
+    let query = supabase
       .from('orders')
-      .select('*, tables(table_number), profiles(display_name, phone), order_items(*, menu_items(name))')
-      .order('placed_at', { ascending: false });
+      .select('*, tables(table_number), profiles(display_name, phone), order_items(*, menu_items(name))');
+
+    const now = new Date();
+    if (range.type === 'today') {
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      query = query.gte('placed_at', startOfDay);
+    } else if (range.type === 'week') {
+      const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      query = query.gte('placed_at', lastWeek);
+    } else if (range.type === 'month') {
+      const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+      query = query.gte('placed_at', lastMonth);
+    } else if (range.type === 'custom' && range.start && range.end) {
+      query = query.gte('placed_at', range.start).lte('placed_at', `${range.end}T23:59:59`);
+    }
+
+    const { data } = await query.order('placed_at', { ascending: false });
     setOrders(data || []);
     setLoading(false);
   };
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => { fetchOrders(); }, [range]);
 
   const formatTime = (iso) =>
     iso ? new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -28,10 +45,18 @@ const OrderList = () => {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Order List</h2>
-        <button onClick={fetchOrders} className={`p-3 ${BORDER_BLACK} bg-white hover:bg-[#f2ca50] transition-colors shadow-[4px_4px_0px_#000000]`}>
-          <RefreshCw size={20} strokeWidth={3} />
-        </button>
+        <div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Order List</h2>
+          <p className="text-[10px] font-bold text-black/40 mt-1 uppercase tracking-widest">
+            {range.type === 'today' ? "Today's Orders" : range.type === 'week' ? "Last 7 Days" : range.type === 'month' ? "Last 30 Days" : "Custom Range"}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+          <button onClick={fetchOrders} className={`p-3 ${BORDER_BLACK} bg-white hover:bg-[#f2ca50] transition-colors shadow-[4px_4px_0px_#000000]`}>
+            <RefreshCw size={20} strokeWidth={3} />
+          </button>
+        </div>
       </div>
 
       {orders.length === 0 ? (
@@ -69,7 +94,14 @@ const OrderList = () => {
                   {expandedId === order.id && (
                     <tr>
                       <td colSpan={6} className="bg-[#f2ca50]/10 p-6 border-t-2 border-black/10">
-                        <p className="text-[10px] font-black uppercase tracking-widest mb-3 text-black/40">Order Items</p>
+                        <div className="flex justify-between items-center mb-3">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Order Items</p>
+                          {order.profiles?.phone && (
+                            <p className="text-[10px] font-black uppercase bg-black text-white px-2 py-0.5 tracking-widest">
+                              Phone: {order.profiles.phone}
+                            </p>
+                          )}
+                        </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           {order.order_items?.map(item => (
                             <div key={item.id} className={`bg-white p-3 border-2 border-black text-xs font-black uppercase`}>

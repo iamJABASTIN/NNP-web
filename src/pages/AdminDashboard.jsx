@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Admin/Sidebar';
 import DashboardHome from '../components/Admin/DashboardHome';
 import MenuManagement from '../components/Admin/MenuManagement';
-import SessionManagement from '../components/Admin/SessionManagement';
 import OrderList from '../components/Admin/OrderList';
 import CustomerList from '../components/Admin/CustomerList';
 import Analytics from '../components/Admin/Analytics';
@@ -16,7 +15,6 @@ const AdminDashboard = () => {
     switch (activeTab) {
       case 'dashboard': return <DashboardHome />;
       case 'menu': return <MenuManagement />;
-      case 'sessions': return <SessionManagement />;
       case 'orders': return <OrderList />;
       case 'customers': return <CustomerList />;
       case 'analytics': return <Analytics />;

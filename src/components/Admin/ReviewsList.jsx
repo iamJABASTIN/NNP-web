@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Star, MessageCircle } from 'lucide-react';
 import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
+import TimeRangeFilter from './TimeRangeFilter';
 
 const StarDisplay = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -17,12 +18,13 @@ const ReviewsList = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [avgRating, setAvgRating] = useState(0);
+  const [range, setRange] = useState({ type: 'week', start: '', end: '' });
 
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('reviews')
           .select(`
             *,
@@ -35,8 +37,23 @@ const ReviewsList = () => {
                 menu_items (name)
               )
             )
-          `)
-          .order('created_at', { ascending: false });
+          `);
+
+        const now = new Date();
+        if (range.type === 'today') {
+          const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+          query = query.gte('created_at', startOfDay);
+        } else if (range.type === 'week') {
+          const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          query = query.gte('created_at', lastWeek);
+        } else if (range.type === 'month') {
+          const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+          query = query.gte('created_at', lastMonth);
+        } else if (range.type === 'custom' && range.start && range.end) {
+          query = query.gte('created_at', range.start).lte('created_at', `${range.end}T23:59:59`);
+        }
+
+        const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
 
@@ -71,7 +88,7 @@ const ReviewsList = () => {
       }
     };
     fetchReviews();
-  }, []);
+  }, [range]);
 
   const formatDate = (iso) => iso ? new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
@@ -79,7 +96,15 @@ const ReviewsList = () => {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-      <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black inline-block">Reviews</h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Reviews</h2>
+          <p className="text-[10px] font-bold text-black/40 mt-1 uppercase tracking-widest">
+            {range.type === 'today' ? "Reviews Today" : range.type === 'week' ? "Reviews Last 7 Days" : range.type === 'month' ? "Reviews Last 30 Days" : "Custom Range"}
+          </p>
+        </div>
+        <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+      </div>
 
       {/* Summary card */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

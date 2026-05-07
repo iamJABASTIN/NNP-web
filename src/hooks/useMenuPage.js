@@ -109,6 +109,12 @@ export function useMenuPage(tableId) {
       if (!currentUser) {
         console.log('No user session, performing anonymous check-in...');
         currentUser = await checkIn(nickname, mobile);
+      } else {
+        // Ensure profile has current nickname and mobile
+        await supabase
+          .from('profiles')
+          .update({ display_name: nickname, phone: mobile })
+          .eq('id', currentUser.id);
       }
       
       // 2. Ensure Session

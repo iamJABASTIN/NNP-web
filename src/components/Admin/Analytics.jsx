@@ -6,6 +6,7 @@ import {
   AreaChart, Area,
 } from 'recharts';
 import { BORDER_BLACK, PRIMARY_YELLOW, SHADOW_BLACK } from '../../constants/adminStyles';
+import TimeRangeFilter from './TimeRangeFilter';
 
 const Analytics = () => {
   const [stats, setStats] = useState({ total: 0, revenue: 0, avgValue: 0, customers: 0 });
@@ -13,18 +14,41 @@ const Analytics = () => {
   const [topItems, setTopItems] = useState([]);
   const [dailyData, setDailyData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState({ type: 'week', start: '', end: '' });
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       setLoading(true);
 
-      // All orders
-      const { data: orders } = await supabase.from('orders').select('id, total_amount, placed_at, user_id');
+      const now = new Date();
+      let query = supabase.from('orders').select('id, total_amount, placed_at, user_id');
+      
+      if (range.type === 'today') {
+        const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+        query = query.gte('placed_at', startOfDay);
+      } else if (range.type === 'week') {
+        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.gte('placed_at', lastWeek);
+      } else if (range.type === 'month') {
+        const lastMonth = new Date(now.setMonth(now.getMonth() - 1)).toISOString();
+        query = query.gte('placed_at', lastMonth);
+      } else if (range.type === 'custom' && range.start && range.end) {
+        query = query.gte('placed_at', range.start).lte('placed_at', `${range.end}T23:59:59`);
+      }
 
-      // Order items with menu names
-      const { data: items } = await supabase.from('order_items').select('menu_item_id, quantity, unit_price, menu_items(name)');
-
+      const { data: orders } = await query;
       const allOrders = orders || [];
+
+      // Order items for the selected orders only
+      const orderIds = allOrders.map(o => o.id);
+      let items = [];
+      if (orderIds.length > 0) {
+        const { data } = await supabase
+          .from('order_items')
+          .select('menu_item_id, quantity, unit_price, menu_items(name)')
+          .in('order_id', orderIds);
+        items = data || [];
+      }
       const totalRevenue = allOrders.reduce((s, o) => s + parseFloat(o.total_amount || 0), 0);
       const uniqueCustomers = new Set(allOrders.map(o => o.user_id)).size;
 
@@ -78,7 +102,7 @@ const Analytics = () => {
       setLoading(false);
     };
     fetchAnalytics();
-  }, []);
+  }, [range]);
 
   if (loading) return <div className="flex-1 flex items-center justify-center font-black uppercase tracking-[0.5em]">Crunching Numbers...</div>;
 
@@ -91,7 +115,15 @@ const Analytics = () => {
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-      <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black inline-block">Analytics</h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Analytics</h2>
+          <p className="text-[10px] font-bold text-black/40 mt-1 uppercase tracking-widest">
+            Insights for {range.type === 'today' ? "Today" : range.type === 'week' ? "Last 7 Days" : range.type === 'month' ? "Last 30 Days" : "Custom Range"}
+          </p>
+        </div>
+        <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+      </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
