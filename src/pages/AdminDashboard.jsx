@@ -7,15 +7,30 @@ import CustomerList from '../components/Admin/CustomerList';
 import Analytics from '../components/Admin/Analytics';
 import ReviewsList from '../components/Admin/ReviewsList';
 import Settings from '../components/Admin/Settings';
+import QuickPOS from '../components/Admin/QuickPOS';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [editingOrderId, setEditingOrderId] = useState(null);
+
+  const handleEditOrder = (orderId) => {
+    setEditingOrderId(orderId);
+    setActiveTab('quick-pos');
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <DashboardHome />;
+      case 'quick-pos': 
+        return (
+          <QuickPOS 
+            editingOrderId={editingOrderId} 
+            onCancelEdit={() => setEditingOrderId(null)} 
+          />
+        );
       case 'menu': return <MenuManagement />;
-      case 'orders': return <OrderList />;
+      case 'orders': 
+        return <OrderList onEdit={handleEditOrder} />;
       case 'customers': return <CustomerList />;
       case 'analytics': return <Analytics />;
       case 'reviews': return <ReviewsList />;

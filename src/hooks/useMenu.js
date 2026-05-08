@@ -24,7 +24,8 @@ export function useMenu() {
         const { data: itemData, error: itemError } = await supabase
           .from('menu_items')
           .select('*')
-          .eq('is_available', true);
+          .eq('is_available', true)
+          .eq('is_deleted', false);
 
         if (itemError) throw itemError;
         setItems(itemData);

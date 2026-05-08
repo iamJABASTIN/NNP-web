@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ChevronDown, ChevronUp, Package, RefreshCw } from 'lucide-react';
+import { ChevronDown, ChevronUp, Package, RefreshCw, Edit } from 'lucide-react';
 import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
 import TimeRangeFilter from './TimeRangeFilter';
 
-const OrderList = () => {
+const OrderList = ({ onEdit }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
@@ -113,14 +113,24 @@ const OrderList = () => {
                             </div>
                           ))}
                         </div>
-                        {order.special_instructions && (
-                          <p className="mt-3 text-[10px] italic text-black/60 border-t border-black/10 pt-2">
-                            Note: {order.special_instructions}
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t-2 border-black/10">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-black/40">
+                            {order.special_instructions ? `Note: ${order.special_instructions}` : ''}
                           </p>
-                        )}
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(order.id);
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black uppercase hover:bg-[#f2ca50] hover:text-black transition-all ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50] hover:shadow-[4px_4px_0px_#000000] active:translate-y-1 active:shadow-none`}
+                          >
+                            <Edit size={14} /> Edit Order
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )}
+
                 </React.Fragment>
               ))}
             </tbody>

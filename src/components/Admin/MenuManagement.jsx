@@ -65,7 +65,11 @@ const MenuManagement = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: menuData } = await supabase.from('menu_items').select('*').order('created_at', { ascending: false });
+    const { data: menuData } = await supabase
+      .from('menu_items')
+      .select('*')
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false });
     const { data: catData } = await supabase.from('categories').select('*').order('display_order');
     setItems(menuData || []);
     setCategories(catData || []);
@@ -183,7 +187,28 @@ const MenuManagement = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
-    await supabase.from('menu_items').delete().eq('id', deleteTarget.id);
+    
+    try {
+      // Try physical delete first (will work if not referenced)
+      const { error } = await supabase.from('menu_items').delete().eq('id', deleteTarget.id);
+      
+      // If 409 Conflict, it means it's referenced in orders, so do a soft delete
+      if (error && error.code === '23503') { // Foreign key violation
+        await supabase
+          .from('menu_items')
+          .update({ is_deleted: true, is_available: false })
+          .eq('id', deleteTarget.id);
+        showNotification(`${deleteTarget.name} archived successfully (linked to orders)`, 'success');
+      } else if (error) {
+        throw error;
+      } else {
+        showNotification(`${deleteTarget.name} deleted successfully`, 'success');
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      showNotification('Failed to delete item', 'error');
+    }
+
     setDeleteTarget(null);
     fetchData();
   };

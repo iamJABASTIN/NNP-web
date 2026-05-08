@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   LayoutGrid,
+  Zap,
   ListOrdered,
   Users,
   BarChart3,
@@ -20,6 +21,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
       <nav className="flex-1 space-y-2 overflow-y-auto px-2">
         <SidebarItem icon={LayoutGrid} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+        <SidebarItem icon={Zap} label="Quick POS" active={activeTab === 'quick-pos'} onClick={() => setActiveTab('quick-pos')} />
         <SidebarItem icon={Utensils} label="Menu Items" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
         <SidebarItem icon={ListOrdered} label="Order List" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
         <SidebarItem icon={Users} label="Customer" active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} />
