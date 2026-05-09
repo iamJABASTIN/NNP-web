@@ -33,13 +33,6 @@ const AuthHero = () => {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* Brand Label */}
-      <div className="absolute bottom-8 left-16">
-        <h2 className="text-2xl font-black tracking-tighter uppercase whitespace-nowrap">
-          Nellai<span className="text-accent italic">.</span>Punjabi
-        </h2>
-      </div>
     </div>
   );
 };

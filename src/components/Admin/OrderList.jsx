@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ChevronDown, ChevronUp, Package, RefreshCw, Edit } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Package, 
+  RefreshCw, 
+  Edit,
+  Download,
+  Printer,
+  Loader2
+} from 'lucide-react';
 import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
 import TimeRangeFilter from './TimeRangeFilter';
+import { useRef } from 'react';
+import { useBillGeneration } from '../../hooks/useBillGeneration';
+import BillReceipt from '../Menu/BillReceipt';
 
 const OrderList = ({ onEdit }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [range, setRange] = useState({ type: 'today', start: '', end: '' });
+  
+  // Billing & Printing
+  const [activeBill, setActiveBill] = useState(null);
+  const receiptRef = useRef();
+  const { downloadPDF, isGenerating } = useBillGeneration();
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -39,6 +57,75 @@ const OrderList = ({ onEdit }) => {
 
   const formatTime = (iso) =>
     iso ? new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
+  const prepareBillData = (order) => {
+    if (!order) return null;
+    return {
+      orderId: order.id,
+      tableNumber: order.tables?.table_number || '?',
+      totalAmount: order.total_amount,
+      items: order.order_items.map(item => ({
+        id: item.id,
+        name: item.menu_items?.name || 'Unknown Item',
+        quantity: item.quantity,
+        lineTotal: item.quantity * item.unit_price
+      }))
+    };
+  };
+
+  const handleDownload = async (order) => {
+    setActiveBill(order);
+    // Small delay to ensure state update and ref attachment
+    setTimeout(async () => {
+      await downloadPDF(receiptRef, `bill-${order.kot_number || order.id.slice(0, 8)}`);
+    }, 100);
+  };
+
+  const handlePrint = (order) => {
+    setIsPrinting(true);
+    setActiveBill(order);
+    
+    // Wait for DOM to update with activeBill data
+    setTimeout(() => {
+      if (!receiptRef.current) {
+        setIsPrinting(false);
+        return;
+      }
+      
+      const printContent = receiptRef.current.innerHTML;
+      const printWindow = window.open('', '_blank', 'width=400,height=600');
+      
+      if (!printWindow) {
+        alert("Pop-up blocked! Please allow pop-ups to print.");
+        setIsPrinting(false);
+        return;
+      }
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Bill - #${order.kot_number || order.id.slice(0, 8)}</title>
+            <style>
+              @page { size: auto; margin: 0mm; }
+              body { margin: 0; padding: 0; }
+              * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+            <script>
+              window.onload = () => {
+                window.print();
+                setTimeout(() => window.close(), 500);
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      setIsPrinting(false);
+    }, 300);
+  };
 
   if (loading) return <div className="flex-1 flex items-center justify-center font-black uppercase tracking-[0.5em]">Loading Orders...</div>;
 
@@ -117,15 +204,47 @@ const OrderList = ({ onEdit }) => {
                           <p className="text-[10px] font-black uppercase tracking-widest text-black/40">
                             {order.special_instructions ? `Note: ${order.special_instructions}` : ''}
                           </p>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEdit(order.id);
-                            }}
-                            className={`flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black uppercase hover:bg-[#f2ca50] hover:text-black transition-all ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50] hover:shadow-[4px_4px_0px_#000000] active:translate-y-1 active:shadow-none`}
-                          >
-                            <Edit size={14} /> Edit Order
-                          </button>
+                          <div className="flex gap-3">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(order);
+                              }}
+                              disabled={isGenerating}
+                              className={`flex items-center gap-2 px-4 py-2 bg-white text-black text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] active:translate-y-1 active:shadow-none disabled:opacity-50`}
+                            >
+                              {isGenerating && activeBill?.id === order.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Download size={14} />
+                              )}
+                              Download
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePrint(order);
+                              }}
+                              disabled={isPrinting}
+                              className={`flex items-center gap-2 px-4 py-2 bg-[#f2ca50] text-black text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] active:translate-y-1 active:shadow-none disabled:opacity-50`}
+                            >
+                              {isPrinting && activeBill?.id === order.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Printer size={14} />
+                              )}
+                              Print
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(order.id);
+                              }}
+                              className={`flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black uppercase hover:bg-[#f2ca50] hover:text-black transition-all ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50] hover:shadow-[4px_4px_0px_#000000] active:translate-y-1 active:shadow-none`}
+                            >
+                              <Edit size={14} /> Edit Order
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -137,6 +256,15 @@ const OrderList = ({ onEdit }) => {
           </table>
         </div>
       )}
+      {/* Hidden Billing Component for Capture/Print - Must be in DOM but off-screen for html2canvas */}
+      <div className="fixed -left-[9999px] top-0 pointer-events-none">
+        {activeBill && (
+          <BillReceipt 
+            ref={receiptRef}
+            {...prepareBillData(activeBill)}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -23,7 +23,7 @@ const SidebarNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
         {/* Toggle Button */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="mb-12 p-4 border-2 border-black bg-accent text-black hover:scale-105 active:scale-95 transition-all shadow-[4px_4px_0px_#000000] flex items-center justify-center rounded-none-none mx-auto"
+          className="mb-12 p-4 border-2 border-black bg-accent text-black hover:scale-105 active:scale-95 transition-all shadow-[4px_4px_0px_#000000] flex items-center justify-center rounded-none mx-auto"
         >
           {isOpen ? <X size={20} strokeWidth={3} /> : <Menu size={20} strokeWidth={3} />}
         </button>
@@ -43,7 +43,7 @@ const SidebarNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
                     onTabChange(tab.id)
                   }
                 }}
-                className={`relative flex items-center gap-4 p-4 rounded-none-none border-2 transition-all duration-300 group ${
+                className={`relative flex items-center gap-4 p-4 rounded-none border-2 transition-all duration-300 group ${
                   isActive 
                     ? 'bg-black text-white border-black shadow-[4px_4px_0px_#f2ca50]' 
                     : 'bg-white text-black/50 border-transparent hover:bg-black/5'
@@ -52,7 +52,7 @@ const SidebarNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
                 <div className="relative">
                   <Icon size={24} strokeWidth={isActive ? 3 : 2} />
                   {tab.badge && !isOpen && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-none-none ring-2 ring-black" />
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white rounded-none ring-2 ring-black" />
                   )}
                 </div>
 
@@ -68,7 +68,7 @@ const SidebarNav = ({ activeTab, onTabChange, hasActiveOrder }) => {
                         {tab.label}
                       </span>
                       {tab.badge && (
-                        <span className="px-2 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase rounded-none-none">Active</span>
+                        <span className="px-2 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase rounded-none">Active</span>
                       )}
                       <ChevronRight size={14} className={isActive ? 'text-accent' : 'opacity-20'} />
                     </motion.div>

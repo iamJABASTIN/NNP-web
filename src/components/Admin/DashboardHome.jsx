@@ -118,12 +118,6 @@ const DashboardHome = () => {
           color: '#000000',
         },
         {
-          name: 'Profit Margin',
-          value: profitMargin,
-          displayValue: `${profitMargin}%`,
-          color: PRIMARY_YELLOW,
-        },
-        {
           name: 'Peak Hour',
           value: peakHourFill,
           displayValue: peakHourLabel,

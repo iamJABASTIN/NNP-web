@@ -9,7 +9,7 @@ const MenuView = ({
   selectedCategory, setSelectedCategory, 
   categories, 
   vegFilter, setVegFilter,
-  loading, tableId, onCheckIn 
+  loading, tableNumber, onCheckIn 
 }) => {
   if (loading) {
     return (
@@ -28,7 +28,7 @@ const MenuView = ({
 
   return (
     <div className="animate-in fade-in duration-500">
-      <MenuHeader tableId={tableId} />
+      <MenuHeader tableNumber={tableNumber} />
 
       <MenuControls 
         searchTerm={searchTerm} setSearchTerm={setSearchTerm}

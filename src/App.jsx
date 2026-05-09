@@ -17,33 +17,71 @@ import { supabase } from './lib/supabase';
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        setAuthorized(false);
-        setLoading(false);
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          if (mounted) {
+            setAuthorized(false);
+            setLoading(false);
+          }
+          return;
+        }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+        // Check profile for role
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
 
-      if (profile && profile.role === requiredRole) {
-        setAuthorized(true);
-      } else {
-        setAuthorized(false);
+        if (error) {
+          console.error("Auth check error:", error);
+          if (mounted) {
+            setAuthorized(false);
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (profile && profile.role === requiredRole) {
+          if (mounted) setAuthorized(true);
+        } else {
+          if (mounted) setAuthorized(false);
+        }
+      } catch (err) {
+        console.error("Critical auth error:", err);
+        if (mounted) setAuthorized(false);
+      } finally {
+        if (mounted) setLoading(false);
       }
-      setLoading(false);
     };
 
     checkAuth();
-  }, [requiredRole]);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        if (mounted) {
+          setAuthorized(false);
+          setLoading(false);
+          navigate('/auth');
+        }
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        checkAuth();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [requiredRole, navigate]);
 
   if (loading) {
     return (
@@ -59,6 +97,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   return children;
 };
+
 
 function HomePage() {
   const navigate = useNavigate();

@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { TrendingUp, ShoppingBag, DollarSign, Users } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  AreaChart, Area,
+  AreaChart, Area, PieChart, Pie, Cell, ComposedChart, Line
 } from 'recharts';
 import { BORDER_BLACK, PRIMARY_YELLOW, SHADOW_BLACK } from '../../constants/adminStyles';
 import TimeRangeFilter from './TimeRangeFilter';
@@ -15,6 +15,11 @@ const Analytics = () => {
   const [dailyData, setDailyData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState({ type: 'week', start: '', end: '' });
+  
+  // New state for profitability metrics
+  const [categoryData, setCategoryData] = useState([]);
+  const [vegData, setVegData] = useState([]);
+  const [paretoData, setParetoData] = useState([]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -45,7 +50,18 @@ const Analytics = () => {
       if (orderIds.length > 0) {
         const { data } = await supabase
           .from('order_items')
-          .select('menu_item_id, quantity, unit_price, menu_items(name)')
+          .select(`
+            menu_item_id, 
+            quantity, 
+            unit_price, 
+            menu_items (
+              name, 
+              veg_type,
+              categories (
+                name
+              )
+            )
+          `)
           .in('order_id', orderIds);
         items = data || [];
       }
@@ -87,6 +103,67 @@ const Analytics = () => {
         itemMap[name].revenue += i.quantity * parseFloat(i.unit_price || 0);
       });
       setTopItems(Object.values(itemMap).sort((a, b) => b.qty - a.qty).slice(0, 8));
+
+      // --- New Profitability Logic ---
+      
+      const catMap = {};
+      const vMap = { veg: 0, non_veg: 0, egg: 0 };
+      const revenueByItem = {};
+      let totalRev = 0;
+
+      items.forEach(i => {
+        const rev = i.quantity * parseFloat(i.unit_price || 0);
+        totalRev += rev;
+
+        // Category Revenue
+        const catName = i.menu_items?.categories?.name || 'Uncategorized';
+        catMap[catName] = (catMap[catName] || 0) + rev;
+
+        // Veg Type Revenue
+        const vType = i.menu_items?.veg_type || 'veg';
+        vMap[vType] = (vMap[vType] || 0) + rev;
+
+        // Pareto Revenue
+        const itemName = i.menu_items?.name || 'Unknown';
+        revenueByItem[itemName] = (revenueByItem[itemName] || 0) + rev;
+      });
+
+      // Format Category Data
+      setCategoryData(Object.entries(catMap)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+      );
+
+      // Format Veg Data
+      setVegData([
+        { name: 'Veg', value: vMap.veg, color: '#22c55e' },
+        { name: 'Non-Veg', value: vMap.non_veg, color: '#ef4444' },
+        { name: 'Egg', value: vMap.egg, color: '#f2ca50' }
+      ].filter(d => d.value > 0));
+
+      // Format Pareto Data - Top 10 + Others
+      const allSortedItems = Object.entries(revenueByItem)
+        .sort((a, b) => b[1] - a[1]);
+      
+      const top10 = allSortedItems.slice(0, 10);
+      const others = allSortedItems.slice(10);
+      
+      const finalParetoData = [...top10];
+      if (others.length > 0) {
+        const othersRevenue = others.reduce((sum, [_, rev]) => sum + rev, 0);
+        finalParetoData.push(['Other Items', othersRevenue]);
+      }
+      
+      let runningSum = 0;
+      const pareto = finalParetoData.map(([name, revenue]) => {
+        runningSum += revenue;
+        return {
+          name: name === 'Other Items' ? name : (name.length > 12 ? name.substring(0, 12) + '...' : name),
+          revenue,
+          cumulative: totalRev ? (runningSum / totalRev) * 100 : 0
+        };
+      });
+      setParetoData(pareto);
 
       // Daily revenue (last 7 days)
       const days = [];
@@ -207,6 +284,135 @@ const Analytics = () => {
             </ResponsiveContainer>
           </div>
         )}
+      </div>
+
+      {/* Profitability Insights Section */}
+      <div className="mt-8">
+        <h3 className="text-xl font-black uppercase tracking-tight italic mb-8 flex items-center gap-3">
+          <span className="bg-black text-white px-3 py-1">Profitability Insights</span>
+          <div className="h-1 flex-1 bg-black/10"></div>
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+          {/* Revenue by Category - Donut */}
+          <div className={`lg:col-span-5 bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+            <h4 className="text-lg font-black uppercase tracking-tighter mb-6">Revenue by Category</h4>
+            <div className="h-64 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="#000"
+                    strokeWidth={2}
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={['#f2ca50', '#000000', '#ffffff', '#e5e5e5', '#f97316', '#22c55e', '#3b82f6', '#ef4444'][index % 8]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload?.[0]) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className={`bg-black text-white p-3 font-black text-[11px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
+                            <p className="uppercase tracking-widest">{data.name}</p>
+                            <p className="text-[#f2ca50] mt-1">₹{data.value.toFixed(0)}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center">
+                  <p className="text-[10px] font-black text-black/40 uppercase">Total</p>
+                  <p className="text-lg font-black tracking-tighter">₹{categoryData.reduce((s, i) => s + i.value, 0).toFixed(0)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Veg vs Non-Veg Revenue - Horizontal Bar */}
+          <div className={`lg:col-span-7 bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+            <h4 className="text-lg font-black uppercase tracking-tighter mb-6">Veg vs Non-Veg Revenue</h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={vegData} layout="vertical">
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10, fontWeight: 900 }} />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload?.[0]) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className={`bg-black text-white p-3 font-black text-[11px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
+                            <p className="uppercase tracking-widest">{data.name}</p>
+                            <p className="text-[#f2ca50] mt-1">₹{data.value.toFixed(0)}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} stroke="#000" strokeWidth={2}>
+                    {vegData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Item Revenue Contribution - Pareto Chart */}
+        <div className={`bg-white p-8 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+          <h4 className="text-lg font-black uppercase tracking-tighter mb-6">Item Revenue Contribution (Pareto)</h4>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={paretoData}>
+                <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 900 }} height={50} />
+                <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} domain={[0, 100]} />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload?.[0]) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className={`bg-black text-white p-3 font-black text-[11px] ${BORDER_BLACK} shadow-[4px_4px_0px_#f2ca50]`}>
+                          <p className="uppercase tracking-widest mb-1">{data.name}</p>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-white/60">REVENUE:</span>
+                            <span className="text-white">₹{data.revenue.toFixed(0)}</span>
+                          </div>
+                          <div className="flex justify-between gap-4">
+                            <span className="text-white/60">CUMULATIVE:</span>
+                            <span className="text-[#f2ca50]">{data.cumulative.toFixed(1)}%</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar yAxisId="left" dataKey="revenue" fill="#000" barSize={30} />
+                <Line yAxisId="right" type="monotone" dataKey="cumulative" stroke="#f2ca50" strokeWidth={4} dot={{ r: 4, fill: '#000', stroke: '#f2ca50', strokeWidth: 2 }} />
+                <Line yAxisId="right" dataKey={() => 80} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={2} dot={false} activeDot={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-[10px] font-bold text-black/40 mt-4 uppercase tracking-widest text-center">
+            *Red dashed line represents 80% cumulative revenue
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   LayoutGrid,
   Zap,
@@ -8,11 +9,26 @@ import {
   Star,
   Utensils,
   Settings,
+  LogOut,
 } from 'lucide-react';
 import SidebarItem from './SidebarItem';
-import { BORDER_BLACK, PRIMARY_YELLOW } from '../../constants/adminStyles';
+import { BORDER_BLACK } from '../../constants/adminStyles';
+import { supabase } from '../../lib/supabase';
+import LogoutConfirmModal from './LogoutConfirmModal';
+import { useAdminShortcuts } from '../../hooks/useAdminShortcuts';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const navigate = useNavigate();
+
+  // Initialize function key shortcuts
+  useAdminShortcuts(setActiveTab);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   return (
     <aside className={`w-80 bg-white ${BORDER_BLACK} flex flex-col py-10 shadow-[8px_8px_0px_#000000]`}>
       <div className="px-8 mb-16 flex items-center gap-3">
@@ -20,17 +36,36 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       </div>
 
       <nav className="flex-1 space-y-2 overflow-y-auto px-2">
-        <SidebarItem icon={LayoutGrid} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
-        <SidebarItem icon={Zap} label="Quick POS" active={activeTab === 'quick-pos'} onClick={() => setActiveTab('quick-pos')} />
-        <SidebarItem icon={Utensils} label="Menu Items" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} />
-        <SidebarItem icon={ListOrdered} label="Order List" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
-        <SidebarItem icon={Users} label="Customer" active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} />
-        <SidebarItem icon={BarChart3} label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
-        <SidebarItem icon={Star} label="Reviews" active={activeTab === 'reviews'} onClick={() => setActiveTab('reviews')} />
-        <SidebarItem icon={Settings} label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+        <SidebarItem icon={LayoutGrid} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} shortcut="F1" />
+        <SidebarItem icon={Zap} label="Billing" active={activeTab === 'quick-pos'} onClick={() => setActiveTab('quick-pos')} shortcut="F2" />
+        <SidebarItem icon={Utensils} label="Menu Items" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} shortcut="F3" />
+        <SidebarItem icon={ListOrdered} label="Order List" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} shortcut="F4" />
+        <SidebarItem icon={Users} label="Customer" active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} shortcut="F5" />
+        <SidebarItem icon={BarChart3} label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} shortcut="F6" />
+        <SidebarItem icon={Star} label="Reviews" active={activeTab === 'reviews'} onClick={() => setActiveTab('reviews')} shortcut="F7" />
+        <SidebarItem icon={Settings} label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} shortcut="F8" />
       </nav>
+
+      <div className="px-4 mt-auto">
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          className="w-full flex items-center gap-4 px-6 py-4 text-red-600 font-black uppercase tracking-widest text-xs hover:bg-red-50 transition-colors border-t-4 border-black"
+        >
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
+      </div>
+
+      <LogoutConfirmModal 
+        show={showLogoutModal} 
+        onClose={() => setShowLogoutModal(false)} 
+        onConfirm={handleLogout} 
+        message="Are you sure you want to log out from the admin panel?"
+      />
     </aside>
   );
 };
 
+
 export default Sidebar;
+

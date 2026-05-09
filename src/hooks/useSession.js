@@ -136,5 +136,7 @@ export function useSession() {
     return sessionData;
   };
 
-  return { user, session, loading, checkIn, joinSession, startSession };
+  const signOut = () => supabase.auth.signOut();
+
+  return { user, session, loading, checkIn, joinSession, startSession, signOut };
 }

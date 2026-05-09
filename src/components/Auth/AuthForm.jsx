@@ -4,7 +4,7 @@ import { ChevronLeft, Loader2, ArrowRight } from 'lucide-react';
 import { NameInput, EmailInput, PasswordInput } from './AuthFields';
 
 const AuthForm = ({ 
-  authState, 
+  authMode, 
   email, setEmail,
   password, setPassword,
   name, setName,
@@ -12,9 +12,8 @@ const AuthForm = ({
   loading, 
   errors, 
   clearErrors,
-  handleInitialSubmit,
-  handleSignUp,
-  goBack 
+  handleLogin,
+  handleSignUp
 }) => {
   return (
     <motion.div 
@@ -23,31 +22,16 @@ const AuthForm = ({
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-[420px] bg-white border-4 border-black p-8 sm:p-10 shadow-[8px_8px_0px_#000000] relative z-10"
     >
-      <AnimatePresence>
-        {authState !== 'initial' && (
-          <motion.button 
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            onClick={goBack}
-            className="flex items-center gap-1 text-[10px] font-black text-black/30 hover:text-black transition-colors mb-6 uppercase tracking-widest"
-          >
-            <ChevronLeft size={14} className="stroke-[3px]" />
-            <span>Go Back</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
       <div className="mb-10">
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-2">Member Portal</p>
         <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none">
-          {authState === 'initial' ? 'Welcome' : 'Join Us'}
+          {authMode === 'login' ? 'Welcome Back' : 'Create Profile'}
         </h2>
       </div>
 
-      <form onSubmit={authState === 'initial' ? handleInitialSubmit : handleSignUp} className="space-y-6">
+      <form onSubmit={authMode === 'login' ? handleLogin : handleSignUp} className="space-y-6">
         <AnimatePresence mode="wait">
-          {authState === 'signup' && (
+          {authMode === 'signup' && (
             <motion.div 
               key="name-field"
               initial={{ opacity: 0, height: 0 }}
@@ -66,7 +50,6 @@ const AuthForm = ({
 
         <EmailInput 
           value={email} 
-          disabled={authState === 'signup'}
           onChange={(val) => { setEmail(val); clearErrors(); }} 
           error={errors.email} 
         />
@@ -90,7 +73,7 @@ const AuthForm = ({
             <Loader2 className="animate-spin" size={18} />
           ) : (
             <>
-              <span>{authState === 'initial' ? 'Proceed' : 'Create Account'}</span>
+              <span>{authMode === 'login' ? 'Login' : 'Sign Up'}</span>
               <ArrowRight size={16} />
             </>
           )}

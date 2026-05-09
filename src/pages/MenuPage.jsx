@@ -40,6 +40,9 @@ const MenuPage = () => {
     trackNewOrder(order.id);
   };
 
+  const currentTable = tables.find(t => t.id === tableId);
+  const tableNumber = currentTable?.table_number;
+
   const renderView = () => {
     switch (activeTab) {
       case 'orders': return <OrdersView activeOrderId={activeOrderId} status={orderStatus} onSwitchToMenu={() => setActiveTab('menu')} />;
@@ -50,7 +53,7 @@ const MenuPage = () => {
           searchTerm={searchTerm} setSearchTerm={setSearchTerm}
           selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
           categories={categories} vegFilter={vegFilter} setVegFilter={setVegFilter}
-          loading={loading} tableId={tableId} onCheckIn={() => setShowCheckIn(true)}
+          loading={loading} tableNumber={tableNumber} onCheckIn={() => setShowCheckIn(true)}
         />
       );
     }

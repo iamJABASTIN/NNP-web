@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 
-const MenuHeader = ({ tableId }) => {
+const MenuHeader = ({ tableNumber }) => {
   const navigate = useNavigate();
 
   return (
@@ -19,9 +19,9 @@ const MenuHeader = ({ tableId }) => {
         </h1>
       </div>
       
-      {tableId && (
-        <div className="px-3 py-1 bg-black text-white text-[10px] font-black uppercase rounded-none-none border-2 border-black shadow-[2px_2px_0px_#f2ca50]">
-          Table {tableId}
+      {tableNumber && (
+        <div className="px-3 py-1 bg-black text-white text-xs font-black uppercase border-2 border-black shadow-[2px_2px_0px_#f2ca50]">
+          Table {tableNumber}
         </div>
       )}
     </header>

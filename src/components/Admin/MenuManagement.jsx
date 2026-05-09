@@ -29,7 +29,6 @@ const EMPTY_FORM = {
   category_id: '',
   veg_type: 'veg',
   is_available: true,
-  is_featured: false,
   image_url: '',
   spice_level: 0,
   prep_time_mins: 15,
@@ -105,7 +104,6 @@ const MenuManagement = () => {
       category_id: item.category_id || '',
       veg_type: item.veg_type || 'veg',
       is_available: item.is_available ?? true,
-      is_featured: item.is_featured ?? false,
       image_url: item.image_url || '',
       spice_level: item.spice_level ?? 0,
       prep_time_mins: item.prep_time_mins ?? 15,
@@ -126,7 +124,6 @@ const MenuManagement = () => {
       category_id: form.category_id || null,
       veg_type: form.veg_type,
       is_available: form.is_available,
-      is_featured: form.is_featured,
       image_url: form.image_url.trim() || null,
       spice_level: parseInt(form.spice_level) || 0,
       prep_time_mins: parseInt(form.prep_time_mins) || 15,
@@ -211,6 +208,26 @@ const MenuManagement = () => {
 
     setDeleteTarget(null);
     fetchData();
+  };
+
+  const toggleAvailability = async (id, currentStatus) => {
+    try {
+      const { error } = await supabase
+        .from('menu_items')
+        .update({ is_available: !currentStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, is_available: !currentStatus } : item
+      ));
+      
+      showNotification(`Item ${!currentStatus ? 'enabled' : 'disabled'} successfully`, 'success');
+    } catch (error) {
+      console.error('Error toggling availability:', error);
+      showNotification('Failed to update availability', 'error');
+    }
   };
 
   const updateForm = (field, value) => setForm({ ...form, [field]: value });
@@ -304,6 +321,7 @@ const MenuManagement = () => {
               <th className="p-6 tracking-widest">CATEGORY</th>
               <th className="p-6 tracking-widest">PRICE</th>
               <th className="p-6 tracking-widest">STATUS</th>
+              <th className="p-6 tracking-widest">AVAILABILITY</th>
               <th className="p-6 tracking-widest text-right">OPERATIONS</th>
             </tr>
           </thead>
@@ -348,10 +366,20 @@ const MenuManagement = () => {
                     <span className={`text-[10px] italic ${item.veg_type === 'veg' ? 'text-green-600' : 'text-red-600'}`}>
                       {item.veg_type?.toUpperCase()}
                     </span>
-                    {item.is_featured && (
-                      <span className="text-[9px] text-accent font-black">★ FEATURED</span>
-                    )}
                   </div>
+                </td>
+                <td className="p-6">
+                  <button 
+                    onClick={() => toggleAvailability(item.id, item.is_available)}
+                    className={`relative w-12 h-6 border-2 border-black transition-colors duration-200 focus:outline-none ${
+                      item.is_available ? 'bg-green-400' : 'bg-gray-300'
+                    }`}
+                    aria-label={`Toggle availability for ${item.name}`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 border-2 border-black bg-white transition-all duration-200 ${
+                      item.is_available ? 'left-[22px]' : 'left-0.5'
+                    }`} />
+                  </button>
                 </td>
                 <td className="p-6 text-right">
                   <div className="flex items-center gap-3 justify-end">

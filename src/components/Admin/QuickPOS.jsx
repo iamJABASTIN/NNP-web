@@ -33,8 +33,19 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [tableSelectedIndex, setTableSelectedIndex] = useState(-1);
 
+  const orderTypeRef = useRef(null);
+  const nameInputRef = useRef(null);
+  const phoneInputRef = useRef(null);
+  const tableSelectRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    // Initial focus on Order Type
+    orderTypeRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     fetchInitialData();
@@ -110,6 +121,11 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
   const filteredItems = menuItems.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Reset selected index when search query changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchQuery]);
 
   const addToCart = (item) => {
     setCart(prev => {
@@ -322,16 +338,32 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
 
       {/* Header Bar */}
       <div className={`bg-white ${BORDER_BLACK} ${SHADOW_BLACK} p-6 flex flex-wrap items-end gap-6`}>
-        <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Order Type</label>
+        <div 
+          ref={orderTypeRef}
+          tabIndex={0}
+          className="flex flex-col gap-2 outline-none focus:ring-2 focus:ring-[#f2ca50] focus:ring-offset-2"
+          onKeyDown={(e) => {
+            if (e.key === ' ') {
+              e.preventDefault();
+              setCustomer(c => ({ ...c, type: c.type === 'dine-in' ? 'takeaway' : 'dine-in' }));
+            }
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              nameInputRef.current?.focus();
+            }
+          }}
+        >
+          <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Order Type (SPACE TO TOGGLE)</label>
           <div className="flex bg-gray-100 p-1 border-2 border-black">
             <button 
+              tabIndex={-1}
               onClick={() => setCustomer(c => ({...c, type: 'dine-in'}))}
               className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase transition-all ${customer.type === 'dine-in' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
             >
               <Coffee size={14} /> Dine-In
             </button>
             <button 
+              tabIndex={-1}
               onClick={() => setCustomer(c => ({...c, type: 'takeaway'}))}
               className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase transition-all ${customer.type === 'takeaway' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
             >
@@ -344,29 +376,74 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
           <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Customer Details</label>
           <div className="flex gap-4">
             <input 
+              ref={nameInputRef}
               type="text" 
               placeholder="NAME"
               className={`flex-1 p-3 border-2 border-black focus:border-[#f2ca50] outline-none font-black text-xs uppercase`}
               value={customer.name}
               onChange={e => setCustomer(c => ({...c, name: e.target.value}))}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  phoneInputRef.current?.focus();
+                }
+              }}
             />
             <input 
+              ref={phoneInputRef}
               type="text" 
               placeholder="PHONE"
               className={`flex-1 p-3 border-2 border-black focus:border-[#f2ca50] outline-none font-black text-xs uppercase`}
               value={customer.phone}
               onChange={e => setCustomer(c => ({...c, phone: e.target.value}))}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (customer.type === 'dine-in') {
+                    tableSelectRef.current?.focus();
+                  } else {
+                    searchInputRef.current?.focus();
+                  }
+                }
+              }}
             />
           </div>
         </div>
 
         {customer.type === 'dine-in' && (
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Table</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Table (SPACE TO CYCLE)</label>
             <select 
+              ref={tableSelectRef}
               className={`p-3 border-2 border-black bg-white font-black text-xs uppercase outline-none focus:border-[#f2ca50]`}
               value={customer.tableId}
-              onChange={e => setCustomer(c => ({...c, tableId: e.target.value}))}
+              onChange={e => {
+                setCustomer(c => ({...c, tableId: e.target.value}));
+                const idx = tables.findIndex(t => t.id === e.target.value);
+                setTableSelectedIndex(idx);
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  searchInputRef.current?.focus();
+                }
+                if (e.key === ' ' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  if (tables.length > 0) {
+                    const nextIdx = (tableSelectedIndex + 1) % tables.length;
+                    setTableSelectedIndex(nextIdx);
+                    setCustomer(c => ({...c, tableId: tables[nextIdx].id}));
+                  }
+                }
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  if (tables.length > 0) {
+                    const prevIdx = (tableSelectedIndex - 1 + tables.length) % tables.length;
+                    setTableSelectedIndex(prevIdx);
+                    setCustomer(c => ({...c, tableId: tables[prevIdx].id}));
+                  }
+                }
+              }}
             >
               <option value="">SELECT TABLE</option>
               {tables.map(t => (
@@ -385,7 +462,6 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
           <Search size={24} className="text-black/30" />
           <input 
             ref={searchInputRef}
-            autoFocus
             type="text" 
             placeholder="SEARCH PRODUCTS (TYPE NAME AND HIT ENTER)"
             className="flex-1 bg-transparent border-none outline-none font-black text-xl uppercase tracking-tight placeholder:text-black/10"
@@ -393,7 +469,20 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && filteredItems.length > 0) {
-                addToCart(filteredItems[0]);
+                e.preventDefault();
+                addToCart(filteredItems[selectedIndex]);
+              }
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (filteredItems.length > 0) {
+                  setSelectedIndex(prev => (prev + 1) % filteredItems.length);
+                }
+              }
+              if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (filteredItems.length > 0) {
+                  setSelectedIndex(prev => (prev - 1 + filteredItems.length) % filteredItems.length);
+                }
               }
               if (e.key === 'Escape') {
                 setSearchQuery('');
@@ -417,7 +506,7 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
                 <button 
                   key={item.id}
                   onClick={() => addToCart(item)}
-                  className={`w-full p-4 flex items-center justify-between hover:bg-[#f2ca50] transition-colors border-b-2 border-black last:border-b-0 ${idx === 0 ? 'bg-[#f2ca50]/10' : ''}`}
+                  className={`w-full p-4 flex items-center justify-between transition-colors border-b-2 border-black last:border-b-0 ${idx === selectedIndex ? 'bg-[#f2ca50] text-black' : 'hover:bg-[#f2ca50]/50'}`}
                 >
                   <div className="flex flex-col items-start text-left">
                     <span className="font-black text-sm uppercase">{item.name}</span>

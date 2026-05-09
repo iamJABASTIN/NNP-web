@@ -15,10 +15,20 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // UI state: 'initial' | 'signup'
-  const [authState, setAuthState] = useState('initial');
+  // UI state: 'login' | 'signup'
+  const [authMode, setAuthMode] = useState('login');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  React.useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        handlePostAuth();
+      }
+    };
+    checkSession();
+  }, []);
 
   const clearErrors = () => setErrors({});
 
@@ -26,10 +36,6 @@ const AuthPage = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-
-      if (session?.user?.is_anonymous) {
-        await supabase.auth.linkIdentity({ provider: 'email' });
-      }
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -50,14 +56,14 @@ const AuthPage = () => {
     }
   };
 
-  const handleInitialSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!email.trim() || !email.includes('@')) {
       setErrors({ email: 'Enter a valid email' });
       return;
     }
-    if (!password || password.length < 6) {
-      setErrors({ password: 'Min 6 characters' });
+    if (!password) {
+      setErrors({ password: 'Password is required' });
       return;
     }
 
@@ -68,17 +74,7 @@ const AuthPage = () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        const isNotFound = 
-          error.status === 400 && (
-            error.message?.toLowerCase().includes('invalid login credentials') ||
-            error.message?.toLowerCase().includes('user_not_found')
-          );
-        
-        if (isNotFound) {
-          setAuthState('signup');
-        } else {
-          setErrors({ password: error.message });
-        }
+        setErrors({ password: 'Invalid email or password' });
       } else {
         await handlePostAuth();
       }
@@ -95,6 +91,10 @@ const AuthPage = () => {
       setErrors({ name: 'Name is required' });
       return;
     }
+    if (!email.trim() || !email.includes('@')) {
+        setErrors({ email: 'Enter a valid email' });
+        return;
+      }
     if (!password || password.length < 6) {
       setErrors({ password: 'Min 6 characters' });
       return;
@@ -115,7 +115,7 @@ const AuthPage = () => {
           setErrors({ password: 'Rate limit reached. Try later.' });
         } else {
           setErrors({ password: error.message?.toLowerCase().includes('already') 
-            ? 'Email already in use.' 
+            ? 'Email already in use. Try logging in.' 
             : error.message });
         }
       } else {
@@ -128,8 +128,8 @@ const AuthPage = () => {
     }
   };
 
-  const goBack = () => {
-    setAuthState('initial');
+  const toggleMode = () => {
+    setAuthMode(prev => prev === 'login' ? 'signup' : 'login');
     clearErrors();
   };
 
@@ -150,16 +150,16 @@ const AuthPage = () => {
           <ChevronLeft size={20} className="stroke-[3px]" />
         </button>
         
-        <div className="lg:hidden mb-12 text-center">
+        {/* <div className="lg:hidden mb-12 text-center">
           <h1 className="text-3xl font-black tracking-tighter uppercase">
             Nellai<span className="text-accent italic">.</span>Punjabi
           </h1>
           <div className="w-12 h-1 bg-black mx-auto mt-2"></div>
-        </div>
+        </div> */}
 
         {/* Auth Form Container */}
         <AuthForm 
-          authState={authState}
+          authMode={authMode}
           email={email} setEmail={setEmail}
           password={password} setPassword={setPassword}
           name={name} setName={setName}
@@ -167,10 +167,24 @@ const AuthPage = () => {
           loading={loading}
           errors={errors}
           clearErrors={clearErrors}
-          handleInitialSubmit={handleInitialSubmit}
+          handleLogin={handleLogin}
           handleSignUp={handleSignUp}
-          goBack={goBack}
+          toggleMode={toggleMode}
         />
+
+        {/* Mode Toggle Link */}
+        <div className="mt-8 text-center animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+            <button 
+                onClick={toggleMode}
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 hover:text-black transition-colors"
+            >
+                {authMode === 'login' ? (
+                    <>New to the family? <span className="text-accent underline decoration-black underline-offset-4">Create Account</span></>
+                ) : (
+                    <>Already a member? <span className="text-accent underline decoration-black underline-offset-4">Log In</span></>
+                )}
+            </button>
+        </div>
 
         {/* Floating Accent Background */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-none-none blur-[120px] pointer-events-none -z-0"></div>
