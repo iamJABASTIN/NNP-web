@@ -15,8 +15,9 @@ import {
   SHADOW_BLACK 
 } from '../../constants/adminStyles';
 
-const DashboardHome = () => {
+const DashboardHome = ({ onNavigate }) => {
   const [loading, setLoading] = useState(true);
+  const [activeMenuIdx, setActiveMenuIdx] = useState(null);
   const [summaryData, setSummaryData] = useState([]);
   const [marketMetrics, setMarketMetrics] = useState([]);
   const [activityData, setActivityData] = useState([]);
@@ -278,10 +279,42 @@ const DashboardHome = () => {
                   </td>
                   <td className="py-4 font-bold">{item.qty} pcs</td>
                   <td className="py-4 italic">₹{item.revenue.toFixed(0)}</td>
-                  <td className="py-4 text-right">
-                     <button className="w-10 h-10 border-2 border-black flex items-center justify-center bg-white hover:bg-black hover:text-white transition-all ml-auto">
+                  <td className="py-4 text-right relative">
+                     <button 
+                        onClick={() => setActiveMenuIdx(activeMenuIdx === idx ? null : idx)}
+                        className="w-10 h-10 border-2 border-black flex items-center justify-center bg-white hover:bg-black hover:text-white transition-all ml-auto"
+                      >
                         <MoreVertical size={20} />
                      </button>
+
+                     {activeMenuIdx === idx && (
+                       <>
+                         <div 
+                           className="fixed inset-0 z-10" 
+                           onClick={() => setActiveMenuIdx(null)}
+                         />
+                         <div className={`absolute right-0 top-14 w-40 bg-white border-2 border-black shadow-[4px_4px_0px_#000000] z-20 animate-in fade-in zoom-in duration-200`}>
+                           <button 
+                             onClick={() => {
+                               onNavigate('analytics');
+                               setActiveMenuIdx(null);
+                             }}
+                             className="w-full text-left px-4 py-3 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-colors border-b-2 border-black/5"
+                           >
+                             View Analytics
+                           </button>
+                           <button 
+                             onClick={() => {
+                               onNavigate('menu');
+                               setActiveMenuIdx(null);
+                             }}
+                             className="w-full text-left px-4 py-3 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-colors"
+                           >
+                             Manage Menu
+                           </button>
+                         </div>
+                       </>
+                     )}
                   </td>
                 </tr>
               ))}

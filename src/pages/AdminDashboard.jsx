@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Admin/Sidebar';
 import DashboardHome from '../components/Admin/DashboardHome';
 import MenuManagement from '../components/Admin/MenuManagement';
+import CategoryManagement from '../components/Admin/CategoryManagement';
 import OrderList from '../components/Admin/OrderList';
 import CustomerList from '../components/Admin/CustomerList';
 import Analytics from '../components/Admin/Analytics';
@@ -20,7 +21,7 @@ const AdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <DashboardHome />;
+      case 'dashboard': return <DashboardHome onNavigate={setActiveTab} />;
       case 'quick-pos': 
         return (
           <QuickPOS 
@@ -29,6 +30,7 @@ const AdminDashboard = () => {
           />
         );
       case 'menu': return <MenuManagement />;
+      case 'categories': return <CategoryManagement />;
       case 'orders': 
         return <OrderList onEdit={handleEditOrder} />;
       case 'customers': return <CustomerList />;

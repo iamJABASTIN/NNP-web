@@ -10,6 +10,7 @@ import {
   Utensils,
   Settings,
   LogOut,
+  Tag,
 } from 'lucide-react';
 import SidebarItem from './SidebarItem';
 import { BORDER_BLACK } from '../../constants/adminStyles';
@@ -39,6 +40,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         <SidebarItem icon={LayoutGrid} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} shortcut="F1" />
         <SidebarItem icon={Zap} label="Billing" active={activeTab === 'quick-pos'} onClick={() => setActiveTab('quick-pos')} shortcut="F2" />
         <SidebarItem icon={Utensils} label="Menu Items" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} shortcut="F3" />
+        <SidebarItem icon={Tag} label="Categories" active={activeTab === 'categories'} onClick={() => setActiveTab('categories')} shortcut="F9" />
         <SidebarItem icon={ListOrdered} label="Order List" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} shortcut="F4" />
         <SidebarItem icon={Users} label="Customer" active={activeTab === 'customers'} onClick={() => setActiveTab('customers')} shortcut="F5" />
         <SidebarItem icon={BarChart3} label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} shortcut="F6" />

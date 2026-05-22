@@ -13,6 +13,7 @@ export const useAdminShortcuts = (setActiveTab) => {
         F6: 'analytics',
         F7: 'reviews',
         F8: 'settings',
+        F9: 'categories',
       };
 
       if (shortcuts[e.key]) {
