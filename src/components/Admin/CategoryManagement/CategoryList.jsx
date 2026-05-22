@@ -3,7 +3,7 @@ import CategoryRow from './CategoryRow';
 
 const CategoryList = ({ categories, onEdit, onDelete, onManageDishes }) => {
   return (
-    <table className="w-full text-left uppercase font-black text-xs">
+    <table className="w-full min-w-[500px] text-left uppercase font-black text-xs">
       <thead className="bg-black text-white">
         <tr>
           <th className="p-6 tracking-widest">CATEGORY NAME</th>

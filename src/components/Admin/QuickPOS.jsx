@@ -337,11 +337,11 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
       )}
 
       {/* Header Bar */}
-      <div className={`bg-white ${BORDER_BLACK} ${SHADOW_BLACK} p-6 flex flex-wrap items-end gap-6`}>
+      <div className={`bg-white ${BORDER_BLACK} ${SHADOW_BLACK} p-4 md:p-6 flex flex-col md:flex-row md:items-end gap-4 md:gap-6`}>
         <div 
           ref={orderTypeRef}
           tabIndex={0}
-          className="flex flex-col gap-2 outline-none focus:ring-2 focus:ring-[#f2ca50] focus:ring-offset-2"
+          className="flex flex-col gap-2 outline-none focus:ring-2 focus:ring-[#f2ca50] focus:ring-offset-2 w-full md:w-auto"
           onKeyDown={(e) => {
             if (e.key === ' ') {
               e.preventDefault();
@@ -354,27 +354,27 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
           }}
         >
           <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Order Type (SPACE TO TOGGLE)</label>
-          <div className="flex bg-gray-100 p-1 border-2 border-black">
+          <div className="flex bg-gray-100 p-1 border-2 border-black justify-center">
             <button 
               tabIndex={-1}
               onClick={() => setCustomer(c => ({...c, type: 'dine-in'}))}
-              className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase transition-all ${customer.type === 'dine-in' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
+              className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase transition-all ${customer.type === 'dine-in' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
             >
               <Coffee size={14} /> Dine-In
             </button>
             <button 
               tabIndex={-1}
               onClick={() => setCustomer(c => ({...c, type: 'takeaway'}))}
-              className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase transition-all ${customer.type === 'takeaway' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
+              className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase transition-all ${customer.type === 'takeaway' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
             >
               <ShoppingBag size={14} /> Takeaway
             </button>
           </div>
         </div>
 
-        <div className="flex-1 min-w-[200px] flex flex-col gap-2">
+        <div className="flex-1 min-w-[200px] flex flex-col gap-2 w-full">
           <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Customer Details</label>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <input 
               ref={nameInputRef}
               type="text" 
@@ -411,11 +411,11 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
         </div>
 
         {customer.type === 'dine-in' && (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 w-full md:w-auto">
             <label className="text-[10px] font-black uppercase tracking-widest text-black/40">Table (SPACE TO CYCLE)</label>
             <select 
               ref={tableSelectRef}
-              className={`p-3 border-2 border-black bg-white font-black text-xs uppercase outline-none focus:border-[#f2ca50]`}
+              className={`p-3 border-2 border-black bg-white font-black text-xs uppercase outline-none focus:border-[#f2ca50] w-full`}
               value={customer.tableId}
               onChange={e => {
                 setCustomer(c => ({...c, tableId: e.target.value}));
@@ -534,13 +534,13 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
             </div>
           ) : (
             cart.map(item => (
-              <div key={item.id} className={`bg-white ${BORDER_BLACK} p-3 flex items-center justify-between animate-in slide-in-from-left duration-200 shadow-sm hover:shadow-md transition-shadow`}>
+              <div key={item.id} className={`bg-white ${BORDER_BLACK} p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in slide-in-from-left duration-200 shadow-sm hover:shadow-md transition-shadow`}>
                 <div className="flex-1">
                   <h4 className="font-black uppercase text-[13px] leading-tight">{item.name}</h4>
                   <p className="text-[10px] font-bold text-black/40 italic">₹{item.price} per unit</p>
                 </div>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
                   <div className="flex items-center border-2 border-black bg-white scale-90">
                     <button 
                       onClick={() => updateQuantity(item.id, -1)}
@@ -557,7 +557,7 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
                     </button>
                   </div>
                   
-                  <div className="w-20 text-right">
+                  <div className="w-16 sm:w-20 text-right">
                     <span className="font-black italic text-sm">₹{item.price * item.quantity}</span>
                   </div>
                   
@@ -574,37 +574,37 @@ const QuickPOS = ({ editingOrderId, onCancelEdit }) => {
         </div>
       </div>
 
-        {/* Footer Summary */}
-        <div className={`bg-black text-white p-6 ${BORDER_BLACK} flex items-center justify-between mt-auto`}>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Total Amount</span>
-            <span className="text-4xl font-black italic tracking-tighter">₹{totalAmount}</span>
-          </div>
-          
-          <button 
-            disabled={cart.length === 0 || isSubmitting || (customer.type === 'dine-in' && !customer.tableId)}
-            onClick={handleSubmit}
-            className={`px-12 py-5 font-black uppercase tracking-widest text-sm flex items-center gap-4 transition-all ${
-              success 
-              ? 'bg-green-500 text-white' 
-              : 'bg-[#f2ca50] text-black hover:-translate-y-1 active:translate-y-0 shadow-[4px_4px_0px_#ffffff]'
-            } disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none`}
-          >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : success ? (
-              <CheckCircle size={20} />
-            ) : (
-              <Zap size={20} fill="currentColor" />
-            )}
-            {success 
-              ? (editingOrderId ? 'ORDER UPDATED!' : 'ORDER PLACED!') 
-              : isSubmitting 
-                ? 'PROCESSING...' 
-                : (editingOrderId ? 'UPDATE ORDER' : 'COMPLETE ORDER')
-            }
-          </button>
+      {/* Footer Summary */}
+      <div className={`bg-black text-white p-4 md:p-6 ${BORDER_BLACK} flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto`}>
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Total Amount</span>
+          <span className="text-3xl md:text-4xl font-black italic tracking-tighter">₹{totalAmount}</span>
         </div>
+        
+        <button 
+          disabled={cart.length === 0 || isSubmitting || (customer.type === 'dine-in' && !customer.tableId)}
+          onClick={handleSubmit}
+          className={`w-full sm:w-auto px-6 md:px-12 py-4 md:py-5 font-black uppercase tracking-widest text-xs md:text-sm flex items-center justify-center gap-4 transition-all ${
+            success 
+            ? 'bg-green-500 text-white' 
+            : 'bg-[#f2ca50] text-black hover:-translate-y-1 active:translate-y-0 shadow-[4px_4px_0px_#ffffff]'
+          } disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none`}
+        >
+          {isSubmitting ? (
+            <Loader2 className="animate-spin" size={20} />
+          ) : success ? (
+            <CheckCircle size={20} />
+          ) : (
+            <Zap size={20} fill="currentColor" />
+          )}
+          {success 
+            ? (editingOrderId ? 'ORDER UPDATED!' : 'ORDER PLACED!') 
+            : isSubmitting 
+              ? 'PROCESSING...' 
+              : (editingOrderId ? 'UPDATE ORDER' : 'COMPLETE ORDER')
+          }
+        </button>
+      </div>
       </div>
     );
 };

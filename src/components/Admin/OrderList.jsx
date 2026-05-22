@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { 
   ChevronDown, 
@@ -28,7 +28,7 @@ const OrderList = ({ onEdit }) => {
   const { downloadPDF, isGenerating } = useBillGeneration();
   const [isPrinting, setIsPrinting] = useState(false);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('orders')
@@ -51,9 +51,9 @@ const OrderList = ({ onEdit }) => {
     const { data } = await query.order('placed_at', { ascending: false });
     setOrders(data || []);
     setLoading(false);
-  };
+  }, [range]);
 
-  useEffect(() => { fetchOrders(); }, [range]);
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   const formatTime = (iso) =>
     iso ? new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
@@ -131,15 +131,17 @@ const OrderList = ({ onEdit }) => {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Order List</h2>
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black w-fit">Order List</h2>
           <p className="text-[10px] font-bold text-black/40 mt-1 uppercase tracking-widest">
             {range.type === 'today' ? "Today's Orders" : range.type === 'week' ? "Last 7 Days" : range.type === 'month' ? "Last 30 Days" : "Custom Range"}
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+        <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <div className="flex-1 sm:flex-none">
+            <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+          </div>
           <button onClick={fetchOrders} className={`p-3 ${BORDER_BLACK} bg-white hover:bg-[#f2ca50] transition-colors shadow-[4px_4px_0px_#000000]`}>
             <RefreshCw size={20} strokeWidth={3} />
           </button>
@@ -153,8 +155,8 @@ const OrderList = ({ onEdit }) => {
           <p className="text-gray-400 font-medium uppercase tracking-widest text-xs mt-2">Orders will appear here once placed</p>
         </div>
       ) : (
-        <div className={`${BORDER_BLACK} bg-white ${SHADOW_BLACK} overflow-hidden`}>
-          <table className="w-full text-left">
+        <div className={`${BORDER_BLACK} bg-white ${SHADOW_BLACK} overflow-x-auto w-full`}>
+          <table className="w-full min-w-[650px] text-left">
             <thead className="bg-black text-white">
               <tr>
                 {['Order', 'Table', 'Customer', 'Items', 'Total', 'Time'].map(h => (
@@ -200,11 +202,11 @@ const OrderList = ({ onEdit }) => {
                             </div>
                           ))}
                         </div>
-                        <div className="flex justify-between items-center mt-4 pt-3 border-t-2 border-black/10">
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mt-4 pt-3 border-t-2 border-black/10">
                           <p className="text-[10px] font-black uppercase tracking-widest text-black/40">
                             {order.special_instructions ? `Note: ${order.special_instructions}` : ''}
                           </p>
-                          <div className="flex gap-3">
+                          <div className="flex flex-wrap gap-3">
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();

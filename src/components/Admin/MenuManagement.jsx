@@ -162,7 +162,7 @@ const MenuManagement = () => {
       const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
       const filePath = `items/${fileName}`;
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('menu_items')
         .upload(filePath, file);
 
@@ -253,19 +253,19 @@ const MenuManagement = () => {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Menu Catalog</h2>
-        <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black w-fit">Menu Catalog</h2>
+        <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
           <button 
             onClick={fetchData}
-            className={`p-4 border-2 border-black hover:bg-black hover:text-white transition-all`}
+            className={`p-4 border-2 border-black hover:bg-black hover:text-white transition-all flex-1 sm:flex-none flex justify-center`}
             title="Refresh Data"
           >
             <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
           </button>
           <button 
             onClick={openAddModal}
-            className={`flex items-center gap-3 bg-accent text-black font-black px-8 py-4 ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] hover:-translate-y-1 transition-all`}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-3 bg-accent text-black font-black px-6 sm:px-8 py-4 ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] hover:-translate-y-1 transition-all`}
           >
             <Plus size={20} strokeWidth={4} />
             <span className="uppercase tracking-widest text-xs">ADD NEW DISH</span>
@@ -274,8 +274,8 @@ const MenuManagement = () => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className={`bg-white ${BORDER_BLACK} p-4 shadow-[4px_4px_0px_#000000] flex flex-wrap items-center gap-6`}>
-        <div className="flex-1 min-w-[200px] relative">
+      <div className={`bg-white ${BORDER_BLACK} p-4 shadow-[4px_4px_0px_#000000] flex flex-col md:flex-row md:items-center gap-4 md:gap-6`}>
+        <div className="flex-1 w-full relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/30" size={18} />
           <input 
             type="text" 
@@ -286,11 +286,11 @@ const MenuManagement = () => {
           />
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-2 border-b-2 border-black/10 focus-within:border-black py-1">
             <Filter size={14} className="text-black/40" />
             <select 
-              className="bg-transparent font-black uppercase text-[10px] tracking-widest outline-none cursor-pointer border-b-2 border-black/10 focus:border-black py-1"
+              className="bg-transparent font-black uppercase text-[10px] tracking-widest outline-none cursor-pointer py-1 w-full"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -299,9 +299,9 @@ const MenuManagement = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 border-b-2 border-black/10 focus-within:border-black py-1">
             <select 
-              className="bg-transparent font-black uppercase text-[10px] tracking-widest outline-none cursor-pointer border-b-2 border-black/10 focus:border-black py-1"
+              className="bg-transparent font-black uppercase text-[10px] tracking-widest outline-none cursor-pointer py-1 w-full"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
             >
@@ -313,8 +313,8 @@ const MenuManagement = () => {
         </div>
       </div>
 
-      <div className={`bg-white ${BORDER_BLACK} shadow-[8px_8px_0px_#000000] overflow-hidden`}>
-        <table className="w-full text-left uppercase font-black text-xs">
+      <div className={`bg-white ${BORDER_BLACK} shadow-[8px_8px_0px_#000000] overflow-x-auto w-full`}>
+        <table className="w-full min-w-[800px] text-left uppercase font-black text-xs">
           <thead className="bg-black text-white">
             <tr>
               <th className="p-6 tracking-widest">DISH DETAILS</th>

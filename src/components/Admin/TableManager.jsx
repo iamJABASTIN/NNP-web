@@ -116,7 +116,7 @@ const TableManager = ({ restaurantName }) => {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <TableIcon size={24} strokeWidth={2.5} />
           <h3 className="text-xl font-black uppercase tracking-tighter">
@@ -125,7 +125,7 @@ const TableManager = ({ restaurantName }) => {
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
-          className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest border-2 border-black
+          className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest border-2 border-black
             ${showAdd ? 'bg-black text-white' : 'bg-white hover:bg-gray-100'} transition-all`}
         >
           <Plus size={14} strokeWidth={4} /> {showAdd ? 'Cancel' : 'Add Table'}
@@ -134,23 +134,23 @@ const TableManager = ({ restaurantName }) => {
 
       {/* Add form */}
       {showAdd && (
-        <div className="flex items-end gap-4 p-4 border-2 border-dashed border-black/30 bg-accent/10">
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 p-4 border-2 border-dashed border-black/30 bg-accent/10">
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
             <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Table Number</label>
             <input
               type="text"
-              className="p-2 border-2 border-black font-black text-sm w-32 focus:outline-none"
+              className="p-2 border-2 border-black font-black text-sm w-full sm:w-32 focus:outline-none bg-white"
               value={newTable.table_number}
               onChange={e => setNewTable({ ...newTable, table_number: e.target.value })}
               placeholder="e.g. 12"
               autoFocus
             />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
             <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Capacity</label>
             <input
               type="number"
-              className="p-2 border-2 border-black font-black text-sm w-24 focus:outline-none"
+              className="p-2 border-2 border-black font-black text-sm w-full sm:w-24 focus:outline-none bg-white"
               value={newTable.capacity}
               onChange={e => setNewTable({ ...newTable, capacity: parseInt(e.target.value) || 1 })}
               min={1}
@@ -158,7 +158,7 @@ const TableManager = ({ restaurantName }) => {
           </div>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-black text-white border-2 border-black font-black uppercase text-xs hover:bg-green-600 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 bg-black text-white border-2 border-black font-black uppercase text-xs hover:bg-green-600 transition-colors h-10"
           >
             Add
           </button>

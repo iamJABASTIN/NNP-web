@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Users, Search } from 'lucide-react';
 import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
@@ -10,7 +10,7 @@ const CustomerList = () => {
   const [search, setSearch] = useState('');
   const [range, setRange] = useState({ type: 'month', start: '', end: '' }); // Default to month for customers
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('profiles')
@@ -48,9 +48,9 @@ const CustomerList = () => {
       total_spent: orderMap[p.id]?.total || 0,
     })));
     setLoading(false);
-  };
+  }, [range]);
 
-  useEffect(() => { fetchCustomers(); }, [range]);
+  useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
 
   const filtered = customers.filter(c =>
     !search || (c.display_name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -63,16 +63,30 @@ const CustomerList = () => {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black">Customers</h2>
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic border-b-4 border-black w-fit">Customers</h2>
           <p className="text-gray-400 font-medium uppercase tracking-widest text-[10px] mt-1">
             {range.type === 'today' ? "Joined Today" : range.type === 'week' ? "Joined Last 7 Days" : range.type === 'month' ? "Joined Last 30 Days" : "Custom Join Range"}
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="flex-1 sm:flex-none">
+            <TimeRangeFilter activeRange={range} onRangeChange={setRange} />
+          </div>
         </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className={`bg-white ${BORDER_BLACK} p-4 shadow-[4px_4px_0px_#000000] flex items-center relative`}>
+        <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-black/30" size={18} />
+        <input 
+          type="text" 
+          placeholder="Search by customer name or phone..."
+          className="w-full pl-12 pr-4 py-3 border-2 border-black/10 focus:border-black outline-none font-bold text-sm uppercase tracking-tight"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {filtered.length === 0 ? (
@@ -81,8 +95,8 @@ const CustomerList = () => {
           <h3 className="text-2xl font-black uppercase italic">No Customers Found</h3>
         </div>
       ) : (
-        <div className={`${BORDER_BLACK} bg-white ${SHADOW_BLACK} overflow-hidden`}>
-          <table className="w-full text-left">
+        <div className={`${BORDER_BLACK} bg-white ${SHADOW_BLACK} overflow-x-auto w-full`}>
+          <table className="w-full min-w-[600px] text-left">
             <thead className="bg-black text-white">
               <tr>
                 {['Customer', 'Phone', 'Orders', 'Total Spent', 'Joined'].map(h => (

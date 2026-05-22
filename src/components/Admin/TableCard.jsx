@@ -61,13 +61,40 @@ const TableCard = ({ table, onEdit, onDelete, onQR }) => {
   }
 
   return (
-    <div className={`group relative p-4 bg-white ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] hover:-translate-y-0.5 transition-all`}>
-      <p className="text-lg font-black tracking-tighter text-center">T-{table.table_number}</p>
-      <p className="text-[10px] text-black/50 tracking-widest text-center font-bold">{table.capacity} seats</p>
-      <div className={`w-2 h-2 mx-auto mt-2 border border-black ${table.is_active ? 'bg-green-500' : 'bg-red-400'}`} />
+    <div className={`group relative p-4 bg-white ${BORDER_BLACK} shadow-[4px_4px_0px_#000000] hover:-translate-y-0.5 transition-all flex flex-col justify-between h-full`}>
+      <div>
+        <p className="text-lg font-black tracking-tighter text-center">T-{table.table_number}</p>
+        <p className="text-[10px] text-black/50 tracking-widest text-center font-bold">{table.capacity} seats</p>
+        <div className={`w-2 h-2 mx-auto mt-2 border border-black ${table.is_active ? 'bg-green-500' : 'bg-red-400'}`} />
+      </div>
 
-      {/* Action buttons — visible on hover */}
-      <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+      {/* Action buttons — visible directly on mobile/tablet */}
+      <div className="flex md:hidden items-center justify-center gap-2 mt-4 pt-3 border-t border-black/10">
+        <button
+          onClick={() => onQR(table)}
+          className="w-8 h-8 bg-accent border-2 border-black flex items-center justify-center"
+          aria-label={`Generate QR for table ${table.table_number}`}
+        >
+          <QrCode size={14} strokeWidth={2.5} />
+        </button>
+        <button
+          onClick={() => setEditing(true)}
+          className="w-8 h-8 bg-white border-2 border-black flex items-center justify-center"
+          aria-label={`Edit table ${table.table_number}`}
+        >
+          <Pencil size={12} strokeWidth={2.5} />
+        </button>
+        <button
+          onClick={() => onDelete(table)}
+          className="w-8 h-8 bg-red-100 border-2 border-black flex items-center justify-center hover:bg-red-200"
+          aria-label={`Delete table ${table.table_number}`}
+        >
+          <Trash2 size={12} strokeWidth={2.5} className="text-red-600" />
+        </button>
+      </div>
+
+      {/* Action buttons — visible on hover (desktop only) */}
+      <div className="hidden md:flex absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
         <button
           onClick={() => onQR(table)}
           className="w-9 h-9 bg-accent border-2 border-black flex items-center justify-center hover:scale-110 transition-transform"
