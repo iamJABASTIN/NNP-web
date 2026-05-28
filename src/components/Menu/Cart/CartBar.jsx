@@ -1,8 +1,11 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 const CartBar = ({ itemsCount, totalAmount, onViewCart }) => {
+  const { t } = useLanguage();
+
   if (itemsCount === 0) return null;
 
   return (
@@ -18,7 +21,9 @@ const CartBar = ({ itemsCount, totalAmount, onViewCart }) => {
             <ShoppingBag size={20} className="-rotate-3" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">{itemsCount} Items Added</span>
+            <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">
+              {itemsCount} {t('items', 'Items')}
+            </span>
             <span className="text-lg font-black italic -mt-1 leading-none">₹{totalAmount}</span>
           </div>
         </div>
@@ -27,7 +32,7 @@ const CartBar = ({ itemsCount, totalAmount, onViewCart }) => {
           onClick={onViewCart}
           className="bg-black text-white px-6 py-3 font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-white hover:text-black transition-all border-2 border-black"
         >
-          View Cart
+          {t('view_cart', 'View Cart')}
           <ArrowRight size={14} />
         </button>
       </motion.div>

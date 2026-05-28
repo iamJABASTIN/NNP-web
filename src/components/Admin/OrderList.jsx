@@ -14,7 +14,7 @@ import { BORDER_BLACK, SHADOW_BLACK } from '../../constants/adminStyles';
 import TimeRangeFilter from './TimeRangeFilter';
 import { useRef } from 'react';
 import { useBillGeneration } from '../../hooks/useBillGeneration';
-import BillReceipt from '../Menu/BillReceipt';
+import { BillReceipt } from '../Menu';
 
 const OrderList = ({ onEdit }) => {
   const [orders, setOrders] = useState([]);

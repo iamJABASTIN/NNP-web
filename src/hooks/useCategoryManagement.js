@@ -7,7 +7,7 @@ export function useCategoryManagement() {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
-  const [form, setForm] = useState({ name: '', display_order: '0' });
+  const [form, setForm] = useState({ name: '', name_ta: '', display_order: '0' });
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: null });
@@ -38,10 +38,15 @@ export function useCategoryManagement() {
     setSaving(true);
     try {
       if (modalMode === 'add') {
-        await categoriesService.createCategory(form.name.trim(), form.display_order);
+        await categoriesService.createCategory(form.name.trim(), form.display_order, form.name_ta.trim() || null);
         showNotification('Category added successfully!');
       } else {
-        await categoriesService.updateCategory(editingId, { name: form.name.trim(), display_order: form.display_order, is_active: true });
+        await categoriesService.updateCategory(editingId, { 
+          name: form.name.trim(), 
+          name_ta: form.name_ta.trim() || null,
+          display_order: form.display_order, 
+          is_active: true 
+        });
         showNotification('Category updated successfully!');
       }
       setShowModal(false);

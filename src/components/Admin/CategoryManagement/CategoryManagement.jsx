@@ -15,10 +15,10 @@ const CategoryManagement = () => {
   } = useCategoryManagement();
 
   const openAddModal = () => {
-    setModalMode('add'); setForm({ name: '', display_order: '0' }); setShowModal(true);
+    setModalMode('add'); setForm({ name: '', name_ta: '', display_order: '0' }); setShowModal(true);
   };
   const openEditModal = (cat) => {
-    setModalMode('edit'); setForm({ name: cat.name, display_order: String(cat.display_order) }); setEditingId(cat.id); setShowModal(true);
+    setModalMode('edit'); setForm({ name: cat.name, name_ta: cat.name_ta || '', display_order: String(cat.display_order) }); setEditingId(cat.id); setShowModal(true);
   };
 
   if (loading && categories.length === 0) {

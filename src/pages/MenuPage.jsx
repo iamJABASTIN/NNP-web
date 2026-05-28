@@ -5,12 +5,9 @@ import { useOrderTracking } from '../hooks/useOrderTracking';
 import { useTables } from '../hooks/useTables';
 import SidebarNav from '../components/Navigation/SidebarNav';
 import BottomNav from '../components/Navigation/BottomNav';
-import OrderSuccessModal from '../components/Menu/OrderSuccessModal';
-import CartBar from '../components/Menu/CartBar';
+import { OrderSuccessModal, CartBar, CheckInModal, AddItemsModal } from '../components/Menu';
 import MenuView from '../sections/Menu/MenuView';
 import OrdersView from '../sections/Menu/OrdersView';
-import CheckInModal from '../components/Menu/CheckInModal';
-import AddItemsModal from '../components/Menu/AddItemsModal';
 import ProfileView from '../sections/Menu/ProfileView';
 
 const MenuPage = () => {
@@ -28,7 +25,7 @@ const MenuPage = () => {
     vegFilter, setVegFilter, showCheckIn, setShowCheckIn,
     nickname, setNickname, mobile, setMobile, orderType, setOrderType,
     manualTableName, setManualTableName, sessionCode, setSessionCode,
-    sessionLoading, handleCheckoutConfirm, addToExistingOrder
+    sessionLoading, handleCheckoutConfirm, addToExistingOrder, presetTable
   } = useMenuPage(tableId);
 
   const { activeOrderId, orderStatus, trackNewOrder, loading: orderTrackingLoading } = useOrderTracking();
@@ -40,8 +37,7 @@ const MenuPage = () => {
     trackNewOrder(order.id);
   };
 
-  const currentTable = tables.find(t => t.id === tableId);
-  const tableNumber = currentTable?.table_number;
+  const tableNumber = presetTable?.table_number || tables.find(t => t.id === tableId)?.table_number;
 
   const renderView = () => {
     switch (activeTab) {
@@ -81,8 +77,13 @@ const MenuPage = () => {
       console.log('Active order found, showing AddItemsModal');
       setShowAddConfirm(true);
     } else {
-      console.log('No active order, showing CheckInModal');
-      setShowCheckIn(true);
+      if (tableId) {
+        console.log('Table preset (scanned QR), placing order instantly');
+        onCheckout();
+      } else {
+        console.log('No active order and table not preset, showing CheckInModal');
+        setShowCheckIn(true);
+      }
     }
   };
 

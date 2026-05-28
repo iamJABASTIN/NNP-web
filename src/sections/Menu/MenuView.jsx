@@ -1,7 +1,5 @@
 import React from 'react';
-import MenuHeader from '../../components/Menu/MenuHeader';
-import MenuControls from '../../components/Menu/MenuControls';
-import MenuItemCard from '../../components/Menu/MenuItemCard';
+import { MenuHeader, MenuControls, MenuItemCard } from '../../components/Menu';
 
 const MenuView = ({ 
   items, cart, addToCart, removeFromCart, 
@@ -9,7 +7,7 @@ const MenuView = ({
   selectedCategory, setSelectedCategory, 
   categories, 
   vegFilter, setVegFilter,
-  loading, tableNumber, onCheckIn 
+  loading, tableNumber
 }) => {
   if (loading) {
     return (
@@ -21,7 +19,10 @@ const MenuView = ({
 
   const filteredItems = items.filter(item => {
     const matchesCategory = selectedCategory === 'all' || item.category_id === selectedCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const nameMatch = item.name.toLowerCase().includes(searchLower);
+    const nameTaMatch = item.name_ta ? item.name_ta.toLowerCase().includes(searchLower) : false;
+    const matchesSearch = nameMatch || nameTaMatch;
     const matchesVeg = vegFilter === 'all' || item.veg_type === vegFilter;
     return matchesCategory && matchesSearch && matchesVeg;
   });

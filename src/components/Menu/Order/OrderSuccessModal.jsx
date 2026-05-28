@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, ArrowRight, ShoppingBag } from 'lucide-react';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 const OrderSuccessModal = ({ show, onClose, orderId, total, onTrack }) => {
+  const { t } = useLanguage();
+
   return (
     <AnimatePresence>
       {show && (
@@ -51,21 +54,27 @@ const OrderSuccessModal = ({ show, onClose, orderId, total, onTrack }) => {
               transition={{ delay: 0.4 }}
               className="relative z-10"
             >
-              <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 leading-none">Order Placed!</h2>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 mb-8 italic">Kitchen is warming up the stove</p>
+              <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 leading-none">
+                {t('order_placed', 'Order Placed!')}
+              </h2>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 mb-8 italic">
+                {t('kitchen_warming_up', 'Kitchen is warming up the stove')}
+              </p>
               
               <div className="bg-muted/30 border-2 border-black/10 p-6 mb-8 text-left space-y-3">
                 <div className="flex justify-between items-center text-[10px] font-black uppercase">
-                  <span className="text-black/40 tracking-widest">Order ID</span>
+                  <span className="text-black/40 tracking-widest">{t('order_id', 'Order ID')}</span>
                   <span className="tracking-tighter">#{orderId?.slice(-6).toUpperCase() || 'PENDING'}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-black/40 tracking-widest">Total Amount</span>
+                  <span className="text-[10px] font-black uppercase text-black/40 tracking-widest">
+                    {t('total_amount', 'Total Amount')}
+                  </span>
                   <span className="text-xl font-black italic">₹{total}</span>
                 </div>
                 <div className="pt-3 border-t border-black/5 flex items-center gap-2 text-green-600 font-black text-[10px] uppercase">
                    <ShoppingBag size={12} />
-                   <span>Estimated prep time: 15-20 mins</span>
+                   <span>{t('prep_time_est', 'Estimated prep time: 15-20 mins')}</span>
                 </div>
               </div>
 
@@ -74,7 +83,7 @@ const OrderSuccessModal = ({ show, onClose, orderId, total, onTrack }) => {
                   onClick={onTrack}
                   className="w-full py-5 bg-black text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 border-r-4 border-b-4 border-accent hover:translate-x-1 hover:-translate-y-1 transition-all shadow-[6px_6px_0px_#000000]"
                 >
-                  Track My Order
+                  {t('track_order', 'Track My Order')}
                   <ArrowRight size={18} />
                 </button>
                 
@@ -82,7 +91,7 @@ const OrderSuccessModal = ({ show, onClose, orderId, total, onTrack }) => {
                   onClick={onClose}
                   className="text-[10px] font-black uppercase tracking-widest text-black/40 hover:text-black transition-colors py-2"
                 >
-                  Continue Browsing Menu
+                  {t('continue_browsing', 'Continue Browsing Menu')}
                 </button>
               </div>
             </motion.div>

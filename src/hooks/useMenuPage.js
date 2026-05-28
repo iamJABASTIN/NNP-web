@@ -19,6 +19,28 @@ export function useMenuPage(tableId) {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [activeSession, setActiveSession] = useState(null);
   const [vegFilter, setVegFilter] = useState('all');
+  const [presetTable, setPresetTable] = useState(null);
+
+  // Fetch preset table details when tableId is provided
+  useEffect(() => {
+    if (tableId) {
+      const fetchPresetTable = async () => {
+        try {
+          const { data, error: _error } = await supabase
+            .from('tables')
+            .select('*')
+            .eq('id', tableId)
+            .maybeSingle();
+          if (data) setPresetTable(data);
+        } catch (err) {
+          console.error('Failed to fetch preset table:', err);
+        }
+      };
+      fetchPresetTable();
+    } else {
+      setPresetTable(null);
+    }
+  }, [tableId]);
 
   useEffect(() => {
     if (user) {
@@ -75,17 +97,15 @@ export function useMenuPage(tableId) {
   };
 
   const handleCheckoutConfirm = async () => {
-    if (!nickname.trim()) throw new Error('Please enter a nickname');
-    
     setSessionLoading(true);
     try {
       let resolvedTableId = tableId;
       if (!resolvedTableId) {
-        if (orderType === 'dine_in' && !manualTableName.trim()) {
-          throw new Error('Please enter a table number for Dine In.');
+        if (!manualTableName.trim()) {
+          throw new Error('Please select a table.');
         }
 
-        const searchName = orderType === 'takeout' ? 'Takeout' : manualTableName;
+        const searchName = manualTableName;
         const DEFAULT_RID = '00000000-0000-0000-0000-000000000001';
         
         const { data: tableData, error: tableFetchError } = await supabase
@@ -96,10 +116,7 @@ export function useMenuPage(tableId) {
           .maybeSingle();
 
         if (tableFetchError || !tableData) {
-          if (orderType === 'takeout') {
-            throw new Error('Takeout mode is currently unavailable. Please contact staff.');
-          }
-          throw new Error(`Table "${manualTableName}" not found. Please enter a valid table number.`);
+          throw new Error(`Table "${manualTableName}" not found. Please select a valid table.`);
         }
         resolvedTableId = tableData.id;
       }
@@ -108,13 +125,7 @@ export function useMenuPage(tableId) {
       let currentUser = user;
       if (!currentUser) {
         console.log('No user session, performing anonymous check-in...');
-        currentUser = await checkIn(nickname, mobile);
-      } else {
-        // Ensure profile has current nickname and mobile
-        await supabase
-          .from('profiles')
-          .update({ display_name: nickname, phone: mobile })
-          .eq('id', currentUser.id);
+        currentUser = await checkIn('Guest', '');
       }
       
       // 2. Ensure Session
@@ -233,6 +244,6 @@ export function useMenuPage(tableId) {
     vegFilter, setVegFilter, showCheckIn, setShowCheckIn,
     nickname, setNickname, mobile, setMobile, orderType, setOrderType,
     manualTableName, setManualTableName, sessionCode, setSessionCode,
-    sessionLoading, handleCheckoutConfirm, addToExistingOrder
+    sessionLoading, handleCheckoutConfirm, addToExistingOrder, presetTable
   };
 }

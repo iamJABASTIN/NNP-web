@@ -38,6 +38,17 @@ const CategoryModal = ({ show, mode, form, setForm, onSave, onClose, saving }) =
           </div>
 
           <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Category Name (Tamil)</label>
+            <input
+              type="text"
+              className={`p-3 ${BORDER_BLACK} font-black text-sm focus:outline-none focus:border-[#f2ca50]`}
+              value={form.name_ta || ''}
+              onChange={(e) => setForm({ ...form, name_ta: e.target.value })}
+              placeholder="எ.கா. இனிப்புகள்"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Display Order</label>
             <input
               type="number"

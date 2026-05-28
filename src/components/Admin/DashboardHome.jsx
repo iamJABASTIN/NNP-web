@@ -86,7 +86,7 @@ const DashboardHome = ({ onNavigate }) => {
         totalSaleValue += qty * price;
         totalCostValue += qty * cost;
       });
-      const profitMargin =
+      const _profitMargin =
         totalSaleValue > 0
           ? Math.round(((totalSaleValue - totalCostValue) / totalSaleValue) * 100)
           : 0;

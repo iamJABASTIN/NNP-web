@@ -25,7 +25,7 @@ export function useOrderHistory() {
           table:tables(table_number),
           order_items(
             *,
-            menu_item:menu_items(name, price, veg_type)
+            menu_item:menu_items(name, name_ta, price, veg_type)
           ),
           reviews(id)
         `)

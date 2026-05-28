@@ -4,7 +4,9 @@ import { Edit2, Trash2 } from 'lucide-react';
 const CategoryRow = ({ category, onEdit, onDelete, onManageDishes }) => {
   return (
     <tr className="hover:bg-gray-50 border-b-2 border-black/10">
-      <td className="p-6 font-bold text-sm tracking-tight">{category.name.toUpperCase()}</td>
+      <td className="p-6 font-bold text-sm tracking-tight">
+        {category.name.toUpperCase()} {category.name_ta && <span className="text-black/50 text-xs font-bold font-sans">({category.name_ta})</span>}
+      </td>
       <td className="p-6">
         <button
           onClick={() => onManageDishes(category.id)}

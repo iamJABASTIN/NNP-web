@@ -11,6 +11,7 @@ const QRModal = ({ show, table, restaurantName, onClose }) => {
   const [qrDataUrl, setQrDataUrl] = useState(null);
 
   const tableUrl = table ? `${BASE_URL}/table/${table.id}` : '';
+  const isParcel = table?.table_number === 'Parcel';
 
   useEffect(() => {
     if (!show || !table) return;
@@ -36,7 +37,7 @@ const QRModal = ({ show, table, restaurantName, onClose }) => {
   const downloadPNG = () => {
     if (!qrDataUrl || !table) return;
     const link = document.createElement('a');
-    link.download = `Table-${table.table_number}-QR.png`;
+    link.download = isParcel ? 'Parcel-QR.png' : `Table-${table.table_number}-QR.png`;
     link.href = qrDataUrl;
     link.click();
   };
@@ -81,7 +82,7 @@ const QRModal = ({ show, table, restaurantName, onClose }) => {
       // --- Table number ---
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(48);
-      doc.text(`TABLE ${table.table_number}`, pageW / 2, qrY + qrSize + 30, { align: 'center' });
+      doc.text(isParcel ? 'PARCEL ORDERING' : `TABLE ${table.table_number}`, pageW / 2, qrY + qrSize + 30, { align: 'center' });
 
       // --- CTA text ---
       doc.setFillColor(242, 202, 80);
@@ -99,7 +100,7 @@ const QRModal = ({ show, table, restaurantName, onClose }) => {
       doc.setTextColor(150, 150, 150);
       doc.text(tableUrl, pageW / 2, 280, { align: 'center' });
 
-      doc.save(`Table-${table.table_number}-A4.pdf`);
+      doc.save(isParcel ? 'Parcel-A4.pdf' : `Table-${table.table_number}-A4.pdf`);
     } catch (err) {
       console.error('PDF generation failed:', err);
     }
@@ -122,7 +123,9 @@ const QRModal = ({ show, table, restaurantName, onClose }) => {
         {/* Header */}
         <div className="mb-6">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-1">QR Code</p>
-          <h3 className="text-2xl font-black uppercase tracking-tighter">Table {table.table_number}</h3>
+          <h3 className="text-2xl font-black uppercase tracking-tighter">
+            {isParcel ? 'Parcel QR Code' : `Table ${table.table_number}`}
+          </h3>
         </div>
 
         {/* QR Preview */}

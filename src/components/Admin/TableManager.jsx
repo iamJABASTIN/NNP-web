@@ -7,6 +7,7 @@ import QRModal from './QRModal';
 
 const TableManager = ({ restaurantName }) => {
   const [tables, setTables] = useState([]);
+  const [parcelTable, setParcelTable] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [newTable, setNewTable] = useState({ table_number: '', capacity: 4 });
@@ -17,18 +18,20 @@ const TableManager = ({ restaurantName }) => {
   const fetchTables = async () => {
     const { data } = await supabase
       .from('tables')
-      .select('*')
-      .neq('table_number', 'Takeout')
-      .order('table_number');
+      .select('*');
+
+    const regularTables = (data || []).filter(t => t.table_number !== 'Parcel');
+    const parcel = (data || []).find(t => t.table_number === 'Parcel');
 
     // Sort numerically (1, 2, 10) not lexicographically (1, 10, 2)
-    const sorted = (data || []).sort((a, b) => {
+    const sorted = regularTables.sort((a, b) => {
       const numA = parseInt(a.table_number, 10);
       const numB = parseInt(b.table_number, 10);
       if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
       return a.table_number.localeCompare(b.table_number);
     });
     setTables(sorted);
+    setParcelTable(parcel);
     setLoading(false);
   };
 
@@ -161,6 +164,29 @@ const TableManager = ({ restaurantName }) => {
             className="w-full sm:w-auto px-4 py-2 bg-black text-white border-2 border-black font-black uppercase text-xs hover:bg-green-600 transition-colors h-10"
           >
             Add
+          </button>
+        </div>
+      )}
+
+      {/* Parcel QR Banner */}
+      {parcelTable && (
+        <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-accent/10 ${BORDER_BLACK} ${SHADOW_BLACK}`}>
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 p-3 bg-accent border-2 border-black">
+              <TableIcon size={24} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-lg font-black uppercase tracking-tight">Parcel / Takeaway QR Code</h4>
+              <p className="text-xs text-black/60 font-bold uppercase tracking-wider">
+                Generate QR code for parcel customers to scan and place orders
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setQrTable(parcelTable)}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[#f2ca50] hover:bg-yellow-400 text-black border-2 border-black font-black uppercase text-xs tracking-widest hover:translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 shadow-[4px_4px_0px_#000000] transition-all"
+          >
+            Generate Parcel QR
           </button>
         </div>
       )}

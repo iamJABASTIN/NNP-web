@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 const CartFAB = ({ cart, onClick }) => {
+  const { t } = useLanguage();
   const totalQuantity = cart.reduce((acc, curr) => acc + curr.quantity, 0);
   const totalPrice = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
 
@@ -24,8 +26,12 @@ const CartFAB = ({ cart, onClick }) => {
                   {totalQuantity}
               </div>
               <div className="text-left">
-                  <p className="text-[8px] font-black uppercase tracking-widest text-black/40">View Order</p>
-                  <p className="text-sm font-black uppercase tracking-tight">Checkout</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-black/40">
+                    {t('view_order', 'View Order')}
+                  </p>
+                  <p className="text-sm font-black uppercase tracking-tight">
+                    {t('checkout', 'Checkout')}
+                  </p>
               </div>
             </div>
             <div className="flex items-center gap-4">

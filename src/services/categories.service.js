@@ -26,12 +26,13 @@ export async function checkCategoryHasItems(categoryId) {
   return count > 0;
 }
 
-export async function createCategory(name, displayOrder = 0) {
+export async function createCategory(name, displayOrder = 0, name_ta = null) {
   const { data, error } = await supabase
     .from('categories')
     .insert([{ 
       restaurant_id: DEFAULT_RID,
       name, 
+      name_ta,
       display_order: parseInt(displayOrder) || 0,
       is_active: true
     }])
@@ -47,6 +48,7 @@ export async function updateCategory(id, updates) {
     .from('categories')
     .update({
       name: updates.name,
+      name_ta: updates.name_ta,
       display_order: parseInt(updates.display_order) || 0,
       is_active: updates.is_active
     })

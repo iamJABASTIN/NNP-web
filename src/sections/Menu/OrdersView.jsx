@@ -1,49 +1,76 @@
-import React, { useState, useCallback } from 'react';
-import { motion } from 'motion/react';
-import { ClipboardList, Plus, Receipt, ChefHat, CircleCheck, Star } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOrderDetails } from '../../hooks/useOrderDetails';
 import { useRating } from '../../hooks/useRating';
-import BillPreviewModal from '../../components/Menu/BillPreviewModal';
-import RatingModal from '../../components/Menu/RatingModal';
+import { useSession } from '../../hooks/useSession';
+import {
+  BillPreviewModal,
+  RatingModal,
+  CollectDetailsModal,
+  EmptyState,
+  LoadingState,
+  OrderHeader,
+  ReceiptCard,
+  ActionButtons
+} from '../../components/Menu';
 import { supabase } from '../../lib/supabase';
 
 const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
   const { items, totalAmount, tableNumber, loading } = useOrderDetails(activeOrderId);
   const { hasRated, isSubmitting, submitRating } = useRating(activeOrderId);
+  const { user } = useSession();
+  
   const [showBill, setShowBill] = useState(false);
   const [showRating, setShowRating] = useState(false);
+  const [showCollectDetails, setShowCollectDetails] = useState(false);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('profiles').select('display_name, phone').eq('id', user.id).maybeSingle()
+        .then(({ data }) => data && setProfile(data))
+        .catch(err => console.error('Failed to fetch profile:', err));
+    }
+  }, [user]);
 
   const handleBillClose = () => {
     setShowBill(false);
-    if (!hasRated) {
-      // Small delay so bill modal exit animation completes
-      setTimeout(() => setShowRating(true), 400);
-    }
+    if (!hasRated) setTimeout(() => setShowRating(true), 400);
   };
 
-  const handleRatingSubmit = async (rating, feedback) => {
-    await submitRating(rating, feedback);
+  const handleBillRequestClick = () => {
+    const hasDetails = profile?.display_name && profile?.display_name !== 'Guest' && profile?.phone;
+    if (!hasDetails) setShowCollectDetails(true);
+    else setShowBill(true);
+  };
+
+  const handleDetailsConfirm = async ({ nickname, mobile }) => {
+    if (!user) return;
+    setUpdatingProfile(true);
+    try {
+      const { error: dbError } = await supabase.from('profiles').update({ display_name: nickname, phone: mobile }).eq('id', user.id);
+      if (dbError) throw dbError;
+      const { error: authError } = await supabase.auth.updateUser({ data: { display_name: nickname, mobile_number: mobile } });
+      if (authError) throw authError;
+      setProfile({ display_name: nickname, phone: mobile });
+      setShowCollectDetails(false);
+      setShowBill(true);
+    } catch (err) {
+      alert(err.message || 'Failed to save billing details. Please try again.');
+    } finally {
+      setUpdatingProfile(false);
+    }
   };
 
   const handleBillTaken = useCallback(async () => {
-    if (!activeOrderId) return;
-    try {
-      await supabase
-        .from('orders')
-        .update({ bill_requested_at: new Date().toISOString() })
-        .eq('id', activeOrderId);
-    } catch (err) {
-      console.error('Failed to stamp bill_requested_at:', err);
+    if (activeOrderId) {
+      await supabase.from('orders').update({ bill_requested_at: new Date().toISOString() }).eq('id', activeOrderId)
+        .catch(err => console.error('Failed to stamp bill_requested_at:', err));
     }
   }, [activeOrderId]);
 
-  if (!activeOrderId) {
-    return <EmptyState />;
-  }
-
-  if (loading) {
-    return <LoadingState />;
-  }
+  if (!activeOrderId) return <EmptyState />;
+  if (loading) return <LoadingState />;
 
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom duration-500">
@@ -51,7 +78,7 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
       <ReceiptCard items={items} totalAmount={totalAmount} />
       <ActionButtons
         onSwitchToMenu={onSwitchToMenu}
-        onRequestBill={() => setShowBill(true)}
+        onRequestBill={handleBillRequestClick}
         onRateExperience={() => setShowRating(true)}
         hasRated={hasRated}
       />
@@ -69,170 +96,18 @@ const OrdersView = ({ activeOrderId, status, onSwitchToMenu }) => {
       <RatingModal
         show={showRating}
         onClose={() => setShowRating(false)}
-        onSubmit={handleRatingSubmit}
+        onSubmit={submitRating}
         isSubmitting={isSubmitting}
+      />
+
+      <CollectDetailsModal
+        show={showCollectDetails}
+        onClose={() => setShowCollectDetails(false)}
+        onConfirm={handleDetailsConfirm}
+        loading={updatingProfile}
       />
     </div>
   );
 };
-
-/* ─── Sub-components ─────────────────────────────────────── */
-
-const EmptyState = () => (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-12">
-    <div className="w-24 h-24 border-4 border-black/10 flex items-center justify-center mb-8">
-      <ClipboardList size={48} className="text-black/10" />
-    </div>
-    <h3 className="text-2xl font-black uppercase tracking-tighter mb-2">No Active Orders</h3>
-    <p className="text-xs font-bold uppercase tracking-widest text-black/40">
-      Hungry? Head over to the menu and place your first order!
-    </p>
-  </div>
-);
-
-const LoadingState = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="w-12 h-12 border-4 border-black border-t-accent animate-spin"></div>
-  </div>
-);
-
-const OrderHeader = ({ status, tableNumber }) => {
-  const currentStatus = (status || 'pending').toLowerCase();
-  const statusConfig = {
-    pending:   { label: 'Order Received', color: 'bg-blue-100 text-blue-800' },
-    preparing: { label: 'In Kitchen',     color: 'bg-orange-100 text-orange-800' },
-    ready:     { label: 'Ready',          color: 'bg-green-100 text-green-800' },
-    served:    { label: 'Served',         color: 'bg-black text-white' },
-  };
-  const cfg = statusConfig[currentStatus] || statusConfig.pending;
-
-  return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-black flex items-center justify-center shadow-[4px_4px_0px_#f2ca50]">
-          <Receipt size={20} className="text-accent" />
-        </div>
-        <div>
-          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">My Order</h2>
-          {tableNumber && (
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] font-black uppercase tracking-widest text-accent">Table #</span>
-              <span className="text-xs font-black italic">{tableNumber}</span>
-            </div>
-          )}
-        </div>
-      </div>
-      <span className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 border-2 border-black ${cfg.color}`}>
-        {cfg.label}
-      </span>
-    </div>
-  );
-};
-
-const ReceiptCard = ({ items, totalAmount }) => (
-  <motion.div
-    initial={{ y: 20, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    transition={{ delay: 0.1 }}
-    className="bg-white border-4 border-black shadow-[8px_8px_0px_#000000] relative overflow-hidden"
-  >
-    {/* Decorative corner */}
-    <div className="absolute top-0 right-0 w-10 h-10 bg-accent border-l-4 border-b-4 border-black translate-x-5 -translate-y-5 rotate-45" />
-
-    {/* Column header */}
-    <div className="flex items-center justify-between px-6 py-4 border-b-4 border-black bg-black/[0.03]">
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40">Item</span>
-      <div className="flex items-center gap-8">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 hidden sm:block">Qty</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40 w-20 text-right">Price</span>
-      </div>
-    </div>
-
-    {/* Item rows */}
-    <div className="divide-y divide-black/5">
-      {items.map((item) => (
-        <OrderItemRow key={item.id} item={item} />
-      ))}
-    </div>
-
-    {/* Totals */}
-    <div className="border-t-4 border-black px-6 py-5 bg-black/[0.02]">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-black uppercase tracking-widest text-black/40">Total</span>
-        <span className="text-2xl font-black italic">₹{totalAmount}</span>
-      </div>
-    </div>
-  </motion.div>
-);
-
-const OrderItemRow = ({ item }) => (
-  <motion.div
-    initial={{ x: -10, opacity: 0 }}
-    animate={{ x: 0, opacity: 1 }}
-    className="flex items-center justify-between px-6 py-4 hover:bg-accent/10 transition-colors group"
-  >
-    <div className="flex items-center gap-3 flex-1 min-w-0">
-      <span className="text-[10px] font-black bg-black text-white w-6 h-6 flex items-center justify-center flex-shrink-0">
-        {item.quantity}
-      </span>
-      <span className="text-xs font-black uppercase tracking-tight truncate">
-        {item.name}
-      </span>
-    </div>
-    <div className="flex items-center gap-8">
-      <span className="text-[10px] font-bold text-black/40 hidden sm:block">×{item.quantity}</span>
-      <span className="text-sm font-black italic w-20 text-right">₹{item.lineTotal}</span>
-    </div>
-  </motion.div>
-);
-
-const ActionButtons = ({ onSwitchToMenu, onRequestBill, onRateExperience, hasRated }) => (
-  <div className="flex flex-col gap-4 mt-8">
-    <motion.button
-      initial={{ y: 10, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.2 }}
-      onClick={onSwitchToMenu}
-      className="w-full py-5 bg-accent border-4 border-black font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-[8px_8px_0px_#000000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000000] transition-all active:translate-y-0 active:shadow-[4px_4px_0px_#000000]"
-    >
-      <Plus size={18} strokeWidth={3} />
-      Add More Items
-    </motion.button>
-
-    <motion.button
-      initial={{ y: 10, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.3 }}
-      onClick={onRequestBill}
-      className="w-full py-5 bg-black text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 border-r-4 border-b-4 border-accent hover:translate-x-1 hover:-translate-y-1 transition-all"
-    >
-      <ChefHat size={18} strokeWidth={3} className="text-accent" />
-      Request Bill
-    </motion.button>
-
-    {hasRated ? (
-      <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="w-full py-5 bg-green-50 border-4 border-green-200 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3"
-      >
-        <CircleCheck size={18} strokeWidth={3} className="text-green-600" />
-        <span className="text-green-700">Thanks for the review</span>
-      </motion.div>
-    ) : (
-      <motion.button
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        onClick={onRateExperience}
-        className="w-full py-5 bg-white border-4 border-black font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-[6px_6px_0px_#f2ca50] hover:-translate-y-1 hover:shadow-[8px_8px_0px_#f2ca50] transition-all active:translate-y-0 active:shadow-[3px_3px_0px_#f2ca50]"
-      >
-        <Star size={18} strokeWidth={3} className="text-accent fill-accent" />
-        Rate Experience
-      </motion.button>
-    )}
-  </div>
-);
 
 export default OrdersView;

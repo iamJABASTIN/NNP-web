@@ -13,7 +13,7 @@ export function useTables() {
           .from('tables')
           .select('*')
           .eq('is_active', true)
-          .neq('table_number', 'Takeout')
+          .neq('table_number', 'Parcel')
           .order('table_number', { ascending: true });
 
         if (error) throw error;

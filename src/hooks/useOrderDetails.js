@@ -37,7 +37,7 @@ export function useOrderDetails(activeOrderId) {
         // Fetch order items with menu item names
         const { data: orderItems, error: itemsErr } = await supabase
           .from('order_items')
-          .select('id, quantity, unit_price, menu_items ( name )')
+          .select('id, quantity, unit_price, menu_items ( name, name_ta )')
           .eq('order_id', activeOrderId);
 
         if (itemsErr) throw itemsErr;
@@ -45,6 +45,7 @@ export function useOrderDetails(activeOrderId) {
         const mapped = (orderItems || []).map(item => ({
           id: item.id,
           name: item.menu_items?.name || 'Unknown Item',
+          name_ta: item.menu_items?.name_ta || '',
           quantity: item.quantity,
           unitPrice: item.unit_price,
           lineTotal: item.quantity * item.unit_price,

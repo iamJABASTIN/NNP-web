@@ -23,7 +23,9 @@ import {
 
 const EMPTY_FORM = {
   name: '',
+  name_ta: '',
   description: '',
+  description_ta: '',
   price: '',
   cost_price: '',
   category_id: '',
@@ -98,7 +100,9 @@ const MenuManagement = () => {
     setModalMode('edit');
     setForm({
       name: item.name || '',
+      name_ta: item.name_ta || '',
       description: item.description || '',
+      description_ta: item.description_ta || '',
       price: item.price ?? '',
       cost_price: item.cost_price ?? '',
       category_id: item.category_id || '',
@@ -118,7 +122,9 @@ const MenuManagement = () => {
 
     const payload = {
       name: form.name.trim(),
+      name_ta: form.name_ta.trim() || null,
       description: form.description.trim(),
+      description_ta: form.description_ta.trim() || null,
       price: parseFloat(form.price) || 0,
       cost_price: form.cost_price ? parseFloat(form.cost_price) : null,
       category_id: form.category_id || null,
@@ -340,8 +346,12 @@ const MenuManagement = () => {
                       </div>
                     )}
                     <div className="flex flex-col min-w-0">
-                      <span className="text-sm tracking-tighter">{item.name}</span>
-                      <span className="text-[10px] text-black/50 line-clamp-1 normal-case font-bold">{item.description}</span>
+                      <span className="text-sm tracking-tighter">
+                        {item.name} {item.name_ta && <span className="text-black/50 text-xs font-bold font-sans">({item.name_ta})</span>}
+                      </span>
+                      <span className="text-[10px] text-black/50 line-clamp-1 normal-case font-bold">
+                        {item.description} {item.description_ta && <span className="text-black/30 text-[9px] font-bold font-sans">({item.description_ta})</span>}
+                      </span>
                       {item.prep_time_mins && (
                         <span className="text-[9px] text-black/30 mt-0.5">{item.prep_time_mins} min prep</span>
                       )}
@@ -439,6 +449,18 @@ const MenuManagement = () => {
                 />
               </div>
 
+              {/* Name (Tamil) */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Dish Name (Tamil)</label>
+                <input
+                  type="text"
+                  className={`p-3 ${BORDER_BLACK} font-black text-sm focus:outline-none focus:border-accent`}
+                  value={form.name_ta || ''}
+                  onChange={e => updateForm('name_ta', e.target.value)}
+                  placeholder="எ.கா. மலபார் பரோட்டா"
+                />
+              </div>
+
               {/* Description */}
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Description</label>
@@ -447,6 +469,17 @@ const MenuManagement = () => {
                   value={form.description}
                   onChange={e => updateForm('description', e.target.value)}
                   placeholder="A short description of the dish..."
+                />
+              </div>
+
+              {/* Description (Tamil) */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-black/50">Description (Tamil)</label>
+                <textarea
+                  className={`p-3 ${BORDER_BLACK} font-bold text-xs h-20 focus:outline-none focus:border-accent`}
+                  value={form.description_ta || ''}
+                  onChange={e => updateForm('description_ta', e.target.value)}
+                  placeholder="உணவு பற்றிய சிறு விளக்கம்..."
                 />
               </div>
 
